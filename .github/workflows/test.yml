@@ -5,6 +5,7 @@ on:
 
 jobs:
   test:
+    name: Maven-Java
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
