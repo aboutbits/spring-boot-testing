@@ -46,3 +46,4 @@ build/
 
 ### Local Development ###
 application-local.yml
+/src/main/java/it/aboutbits/springboot/testing/demo_project/
