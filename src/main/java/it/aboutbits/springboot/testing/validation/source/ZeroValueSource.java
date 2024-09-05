@@ -1,6 +1,7 @@
 package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
+import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -15,16 +16,17 @@ public class ZeroValueSource implements ValueSource {
         TYPE_SOURCES.put(Integer.class, (Object[] args) -> Stream.of(0));
         TYPE_SOURCES.put(int.class, (Object[] args) -> Stream.of(0));
 
-        TYPE_SOURCES.put(Float.class, (Object[] args) -> Stream.of(0F));
-        TYPE_SOURCES.put(float.class, (Object[] args) -> Stream.of(0F));
-
         TYPE_SOURCES.put(Long.class, (Object[] args) -> Stream.of(0L));
         TYPE_SOURCES.put(long.class, (Object[] args) -> Stream.of(0L));
+
+        TYPE_SOURCES.put(Float.class, (Object[] args) -> Stream.of(0F));
+        TYPE_SOURCES.put(float.class, (Object[] args) -> Stream.of(0F));
 
         TYPE_SOURCES.put(Double.class, (Object[] args) -> Stream.of(0D));
         TYPE_SOURCES.put(double.class, (Object[] args) -> Stream.of(0D));
 
         TYPE_SOURCES.put(BigDecimal.class, (Object[] args) -> Stream.of(BigDecimal.valueOf(0)));
+        TYPE_SOURCES.put(ScaledBigDecimal.class, (Object[] args) -> Stream.of(ScaledBigDecimal.valueOf(0)));
     }
 
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {

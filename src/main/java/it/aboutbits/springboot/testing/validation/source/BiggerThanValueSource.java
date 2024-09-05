@@ -1,6 +1,7 @@
 package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
+import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -18,16 +19,17 @@ public class BiggerThanValueSource implements ValueSource {
         TYPE_SOURCES.put(Integer.class, BiggerThanValueSource::getIntegerStream);
         TYPE_SOURCES.put(int.class, BiggerThanValueSource::getIntegerStream);
 
-        TYPE_SOURCES.put(Float.class, BiggerThanValueSource::getFloatStream);
-        TYPE_SOURCES.put(float.class, BiggerThanValueSource::getFloatStream);
-
         TYPE_SOURCES.put(Long.class, BiggerThanValueSource::getLongStream);
         TYPE_SOURCES.put(long.class, BiggerThanValueSource::getLongStream);
+
+        TYPE_SOURCES.put(Float.class, BiggerThanValueSource::getFloatStream);
+        TYPE_SOURCES.put(float.class, BiggerThanValueSource::getFloatStream);
 
         TYPE_SOURCES.put(Double.class, BiggerThanValueSource::getDoubleStream);
         TYPE_SOURCES.put(double.class, BiggerThanValueSource::getDoubleStream);
 
         TYPE_SOURCES.put(BigDecimal.class, BiggerThanValueSource::getBigDecimalStream);
+        TYPE_SOURCES.put(ScaledBigDecimal.class, BiggerThanValueSource::getScaledBigDecimalStream);
     }
 
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {
@@ -46,24 +48,13 @@ public class BiggerThanValueSource implements ValueSource {
     }
 
     @NotNull
-    private static Stream<BigDecimal> getBigDecimalStream(Object[] args) {
-        var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
-        var maxValue = Double.MAX_VALUE;
-
-        return Stream.concat(
-                Stream.of(BigDecimal.valueOf(minValue), BigDecimal.valueOf(maxValue)),
-                RANDOM.doubles(minValue, maxValue).limit(5).boxed().map(BigDecimal::valueOf)
-        );
-    }
-
-    @NotNull
-    private static Stream<Double> getDoubleStream(Object[] args) {
-        var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
-        var maxValue = Double.MAX_VALUE;
+    private static Stream<Integer> getIntegerStream(Object[] args) {
+        var minValue = Long.valueOf((long) args[0]).intValue() + 1;
+        var maxValue = Integer.MAX_VALUE;
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.doubles(minValue, maxValue).limit(5).boxed()
+                RANDOM.ints(minValue, maxValue).limit(5).boxed()
         );
     }
 
@@ -92,13 +83,35 @@ public class BiggerThanValueSource implements ValueSource {
     }
 
     @NotNull
-    private static Stream<Integer> getIntegerStream(Object[] args) {
-        var minValue = Long.valueOf((long) args[0]).intValue() + 1;
-        var maxValue = Integer.MAX_VALUE;
+    private static Stream<Double> getDoubleStream(Object[] args) {
+        var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
+        var maxValue = Double.MAX_VALUE;
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.ints(minValue, maxValue).limit(5).boxed()
+                RANDOM.doubles(minValue, maxValue).limit(5).boxed()
+        );
+    }
+
+    @NotNull
+    private static Stream<ScaledBigDecimal> getScaledBigDecimalStream(Object[] args) {
+        var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
+        var maxValue = Double.MAX_VALUE;
+
+        return Stream.concat(
+                Stream.of(ScaledBigDecimal.valueOf(minValue), ScaledBigDecimal.valueOf(maxValue)),
+                RANDOM.doubles(minValue, maxValue).limit(5).boxed().map(ScaledBigDecimal::valueOf)
+        );
+    }
+
+    @NotNull
+    private static Stream<BigDecimal> getBigDecimalStream(Object[] args) {
+        var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
+        var maxValue = Double.MAX_VALUE;
+
+        return Stream.concat(
+                Stream.of(BigDecimal.valueOf(minValue), BigDecimal.valueOf(maxValue)),
+                RANDOM.doubles(minValue, maxValue).limit(5).boxed().map(BigDecimal::valueOf)
         );
     }
 }

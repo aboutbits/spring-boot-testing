@@ -1,6 +1,7 @@
 package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
+import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -19,16 +20,17 @@ public class LessThanValueSource implements ValueSource {
         TYPE_SOURCES.put(Integer.class, LessThanValueSource::getIntegerStream);
         TYPE_SOURCES.put(int.class, LessThanValueSource::getIntegerStream);
 
-        TYPE_SOURCES.put(Float.class, LessThanValueSource::getFloatStream);
-        TYPE_SOURCES.put(float.class, LessThanValueSource::getFloatStream);
-
         TYPE_SOURCES.put(Long.class, LessThanValueSource::getLongStream);
         TYPE_SOURCES.put(long.class, LessThanValueSource::getLongStream);
+
+        TYPE_SOURCES.put(Float.class, LessThanValueSource::getFloatStream);
+        TYPE_SOURCES.put(float.class, LessThanValueSource::getFloatStream);
 
         TYPE_SOURCES.put(Double.class, LessThanValueSource::getDoubleStream);
         TYPE_SOURCES.put(double.class, LessThanValueSource::getDoubleStream);
 
         TYPE_SOURCES.put(BigDecimal.class, LessThanValueSource::getBigDecimalStream);
+        TYPE_SOURCES.put(ScaledBigDecimal.class, LessThanValueSource::getScaledBigDecimalStream);
     }
 
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {
@@ -54,6 +56,17 @@ public class LessThanValueSource implements ValueSource {
         return Stream.concat(
                 Stream.of(minValue, maxValue),
                 RANDOM.ints(minValue, maxValue).limit(5).boxed()
+        );
+    }
+
+    @NotNull
+    private static Stream<Long> getLongStream(Object[] args) {
+        var minValue = Long.MIN_VALUE;
+        var maxValue = (long) args[0] - 1;
+
+        return Stream.concat(
+                Stream.of(minValue, maxValue),
+                RANDOM.longs(minValue, maxValue).limit(5).boxed()
         );
     }
 
@@ -93,13 +106,13 @@ public class LessThanValueSource implements ValueSource {
     }
 
     @NotNull
-    private static Stream<Long> getLongStream(Object[] args) {
-        var minValue = Long.MIN_VALUE;
-        var maxValue = (long) args[0] - 1;
+    private static Stream<ScaledBigDecimal> getScaledBigDecimalStream(Object[] args) {
+        var minValue = Double.MAX_VALUE * -1;
+        var maxValue = Long.valueOf((long) args[0]).doubleValue() - 0.1d;
 
         return Stream.concat(
-                Stream.of(minValue, maxValue),
-                RANDOM.longs(minValue, maxValue).limit(5).boxed()
+                Stream.of(ScaledBigDecimal.valueOf(minValue), ScaledBigDecimal.valueOf(maxValue)),
+                RANDOM.doubles(5).map(d -> minValue + (maxValue - minValue) * d).boxed().map(ScaledBigDecimal::valueOf)
         );
     }
 }
