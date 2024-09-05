@@ -36,10 +36,11 @@ public class LessThanValueSource implements ValueSource {
     }
 
     @Override
-    public Stream<?> values(Class<?> propertyClass, Object... args) {
+    @SuppressWarnings("unchecked")
+    public <T> Stream<T> values(Class<T> propertyClass, Object... args) {
         var sourceFunction = TYPE_SOURCES.get(propertyClass);
         if (sourceFunction != null) {
-            return sourceFunction.apply(args);
+            return (Stream<T>) sourceFunction.apply(args);
         }
 
         throw new IllegalArgumentException("Property class not supported!");

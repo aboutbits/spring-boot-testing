@@ -6,6 +6,7 @@ import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
 import it.aboutbits.springboot.testing.validation.source.FutureValueSource;
 import lombok.NonNull;
 
+@SuppressWarnings("unchecked")
 public interface PastRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
     default V past(@NonNull String property) {
         addRule(

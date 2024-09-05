@@ -6,6 +6,7 @@ import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
 import it.aboutbits.springboot.testing.validation.source.LessThanValueSource;
 import lombok.NonNull;
 
+@SuppressWarnings("unchecked")
 public interface MinRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
     default V min(@NonNull String property, long min) {
         addRule(

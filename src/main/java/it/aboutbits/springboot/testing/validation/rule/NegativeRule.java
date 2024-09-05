@@ -7,6 +7,7 @@ import it.aboutbits.springboot.testing.validation.source.BiggerThanValueSource;
 import it.aboutbits.springboot.testing.validation.source.ZeroValueSource;
 import lombok.NonNull;
 
+@SuppressWarnings("unchecked")
 public interface NegativeRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
     default V negative(@NonNull String property) {
         addRule(

@@ -9,11 +9,11 @@ import it.aboutbits.springboot.testing.validation.rule.NegativeRule;
 import it.aboutbits.springboot.testing.validation.rule.NotBlankRule;
 import it.aboutbits.springboot.testing.validation.rule.NotEmptyRule;
 import it.aboutbits.springboot.testing.validation.rule.NotNullRule;
+import it.aboutbits.springboot.testing.validation.rule.NotValidatedRule;
 import it.aboutbits.springboot.testing.validation.rule.NullableRule;
 import it.aboutbits.springboot.testing.validation.rule.PastRule;
 import it.aboutbits.springboot.testing.validation.rule.PositiveOrZeroRule;
 import it.aboutbits.springboot.testing.validation.rule.PositiveRule;
-import it.aboutbits.springboot.testing.validation.rule.UncheckedRule;
 import it.aboutbits.springboot.testing.validation.rule.ValidBeanRule;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -40,7 +40,7 @@ public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<?>> implements
         PastRule<R>,
         PositiveOrZeroRule<R>,
         PositiveRule<R>,
-        UncheckedRule<R>,
+        NotValidatedRule<R>,
         ValidBeanRule<R> {
     @Getter(AccessLevel.PACKAGE)
     private final List<Rule> rules = new ArrayList<>();

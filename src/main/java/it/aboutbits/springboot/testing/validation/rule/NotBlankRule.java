@@ -6,6 +6,7 @@ import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
 import it.aboutbits.springboot.testing.validation.source.BlankValueSource;
 import lombok.NonNull;
 
+@SuppressWarnings("unchecked")
 public interface NotBlankRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
     default V notBlank(@NonNull String property) {
         addRule(

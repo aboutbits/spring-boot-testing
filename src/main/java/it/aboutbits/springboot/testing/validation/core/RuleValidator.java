@@ -28,7 +28,7 @@ final class RuleValidator<P> {
             @NonNull
             P parameterUnderTest,
             @Nullable
-            Consumer<P> functionToCallWithParameter,
+            Consumer<?> functionToCallWithParameter,
             @NonNull
             List<Rule> rules,
             @NonNull
@@ -38,7 +38,8 @@ final class RuleValidator<P> {
 
     void assertValidation(AssertionParameter<P> assertionParameter) {
         var parameterUnderTest = assertionParameter.parameterUnderTest();
-        var functionToCallWithParameter = assertionParameter.functionToCallWithParameter();
+        @SuppressWarnings("unchecked")
+        var functionToCallWithParameter = (Consumer<P>) assertionParameter.functionToCallWithParameter();
         var rules = assertionParameter.rules();
         var nonBeanTypes = assertionParameter.nonBeanTypes();
 

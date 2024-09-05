@@ -1,5 +1,7 @@
 package it.aboutbits.springboot.testing.validation;
 
+import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
+import it.aboutbits.springboot.testing.validation.core.BaseValidationAssert;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Max;
@@ -11,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.With;
 import org.junit.jupiter.api.Test;
 import org.springframework.lang.Nullable;
 
@@ -19,8 +22,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
+import static it.aboutbits.springboot.testing.validation.ValidationAssertTest.TestValidationAssert.assertThatValidation;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
 class ValidationAssertTest {
-    public record SomeParameter(
+    @With
+    public record SomeValidParameter(
             @NotNull
             String notNullable,
             @NotBlank
@@ -124,7 +131,175 @@ class ValidationAssertTest {
     @Test
     @SuppressWarnings("checkstyle:MethodLength")
     void testWithBeanValidation() {
-        var validParameter = new SomeParameter(
+        var validParameter = getSomeValidParameter();
+
+        assertThatValidation().of(validParameter)
+                .usingBeanValidation()
+                .notNull("notNullable")
+                .notBlank("notBlank")
+                .min("biggerThanInt", 5)
+                .min("biggerThanLong", 5)
+                .min("biggerThanFloat", 5)
+                .min("biggerThanDouble", 5)
+                .min("biggerThanBigDecimal", 5)
+                .max("lessThanInt", 5)
+                .max("lessThanLong", 5)
+                .max("lessThanFloat", 5)
+                .max("lessThanDouble", 5)
+                .max("lessThanBigDecimal", 5)
+                .positive("positiveInt")
+                .positive("positiveLong")
+                .positive("positiveFloat")
+                .positive("positiveDouble")
+                .positive("positiveBigDecimal")
+                .negative("negativeInt")
+                .negative("negativeLong")
+                .negative("negativeFloat")
+                .negative("negativeDouble")
+                .negative("negativeBigDecimal")
+                .between("betweenInt", -3, 5)
+                .between("betweenLong", -3, 5)
+                .between("betweenFloat", -3, 5)
+                .between("betweenDouble", -3, 5)
+                .between("betweenBigDecimal", -3, 5)
+                .positiveOrZero("positiveOrZeroInt")
+                .positiveOrZero("positiveOrZeroLong")
+                .positiveOrZero("positiveOrZeroFloat")
+                .positiveOrZero("positiveOrZeroDouble")
+                .positiveOrZero("positiveOrZeroBigDecimal")
+                .negativeOrZero("negativeOrZeroInt")
+                .negativeOrZero("negativeOrZeroLong")
+                .negativeOrZero("negativeOrZeroFloat")
+                .negativeOrZero("negativeOrZeroDouble")
+                .negativeOrZero("negativeOrZeroBigDecimal")
+                .future("futureDate")
+                .future("futureDateTime")
+                .future("futureOffsetDateTime")
+                .past("pastDate")
+                .past("pastDateTime")
+                .past("pastOffsetDateTime")
+                .validBean("validObject")
+                .nullable("nullable")
+                .notValidated("notValidated")
+                .isCompliant();
+    }
+
+    @Test
+    void invalidParameter_shouldFail() {
+        var validParameter = getSomeValidParameter();
+
+        var invalidParameter = validParameter.withFutureDate(LocalDate.EPOCH);
+
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                () -> assertThatValidation().of(invalidParameter)
+                        .usingBeanValidation()
+                        .notNull("notNullable")
+                        .notBlank("notBlank")
+                        .min("biggerThanInt", 5)
+                        .min("biggerThanLong", 5)
+                        .min("biggerThanFloat", 5)
+                        .min("biggerThanDouble", 5)
+                        .min("biggerThanBigDecimal", 5)
+                        .max("lessThanInt", 5)
+                        .max("lessThanLong", 5)
+                        .max("lessThanFloat", 5)
+                        .max("lessThanDouble", 5)
+                        .max("lessThanBigDecimal", 5)
+                        .positive("positiveInt")
+                        .positive("positiveLong")
+                        .positive("positiveFloat")
+                        .positive("positiveDouble")
+                        .positive("positiveBigDecimal")
+                        .negative("negativeInt")
+                        .negative("negativeLong")
+                        .negative("negativeFloat")
+                        .negative("negativeDouble")
+                        .negative("negativeBigDecimal")
+                        .between("betweenInt", -3, 5)
+                        .between("betweenLong", -3, 5)
+                        .between("betweenFloat", -3, 5)
+                        .between("betweenDouble", -3, 5)
+                        .between("betweenBigDecimal", -3, 5)
+                        .positiveOrZero("positiveOrZeroInt")
+                        .positiveOrZero("positiveOrZeroLong")
+                        .positiveOrZero("positiveOrZeroFloat")
+                        .positiveOrZero("positiveOrZeroDouble")
+                        .positiveOrZero("positiveOrZeroBigDecimal")
+                        .negativeOrZero("negativeOrZeroInt")
+                        .negativeOrZero("negativeOrZeroLong")
+                        .negativeOrZero("negativeOrZeroFloat")
+                        .negativeOrZero("negativeOrZeroDouble")
+                        .negativeOrZero("negativeOrZeroBigDecimal")
+                        .future("futureDate")
+                        .future("futureDateTime")
+                        .future("futureOffsetDateTime")
+                        .past("pastDate")
+                        .past("pastDateTime")
+                        .past("pastOffsetDateTime")
+                        .validBean("validObject")
+                        .nullable("nullable")
+                        .notValidated("notValidated")
+                        .isCompliant());
+    }
+
+    @Test
+    void propertyMissingRule_shouldFail() {
+        var validParameter = getSomeValidParameter();
+
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                () -> assertThatValidation().of(validParameter)
+                        .usingBeanValidation()
+                        .notNull("notNullable")
+                        // this is now missing: .notBlank("notBlank")
+                        .min("biggerThanInt", 5)
+                        .min("biggerThanLong", 5)
+                        .min("biggerThanFloat", 5)
+                        .min("biggerThanDouble", 5)
+                        .min("biggerThanBigDecimal", 5)
+                        .max("lessThanInt", 5)
+                        .max("lessThanLong", 5)
+                        .max("lessThanFloat", 5)
+                        .max("lessThanDouble", 5)
+                        .max("lessThanBigDecimal", 5)
+                        .positive("positiveInt")
+                        .positive("positiveLong")
+                        .positive("positiveFloat")
+                        .positive("positiveDouble")
+                        .positive("positiveBigDecimal")
+                        .negative("negativeInt")
+                        .negative("negativeLong")
+                        .negative("negativeFloat")
+                        .negative("negativeDouble")
+                        .negative("negativeBigDecimal")
+                        .between("betweenInt", -3, 5)
+                        .between("betweenLong", -3, 5)
+                        .between("betweenFloat", -3, 5)
+                        .between("betweenDouble", -3, 5)
+                        .between("betweenBigDecimal", -3, 5)
+                        .positiveOrZero("positiveOrZeroInt")
+                        .positiveOrZero("positiveOrZeroLong")
+                        .positiveOrZero("positiveOrZeroFloat")
+                        .positiveOrZero("positiveOrZeroDouble")
+                        .positiveOrZero("positiveOrZeroBigDecimal")
+                        .negativeOrZero("negativeOrZeroInt")
+                        .negativeOrZero("negativeOrZeroLong")
+                        .negativeOrZero("negativeOrZeroFloat")
+                        .negativeOrZero("negativeOrZeroDouble")
+                        .negativeOrZero("negativeOrZeroBigDecimal")
+                        .future("futureDate")
+                        .future("futureDateTime")
+                        .future("futureOffsetDateTime")
+                        .past("pastDate")
+                        .past("pastDateTime")
+                        .past("pastOffsetDateTime")
+                        .validBean("validObject")
+                        .nullable("nullable")
+                        .notValidated("notValidated")
+                        .isCompliant());
+    }
+
+    private static SomeValidParameter getSomeValidParameter() {
+        return new SomeValidParameter(
                 // notNull
                 "",
 
@@ -199,57 +374,19 @@ class ValidationAssertTest {
                 // not validated
                 null
         );
+    }
 
-        try (var validate = new TestValidationAssert()) {
-            validate.that(validParameter)
-                    .usingBeanValidation()
-                    .notNull("notNullable")
-                    .notBlank("notBlank")
-                    .min("biggerThanInt", 5)
-                    .min("biggerThanLong", 5)
-                    .min("biggerThanFloat", 5)
-                    .min("biggerThanDouble", 5)
-                    .min("biggerThanBigDecimal", 5)
-                    .max("lessThanInt", 5)
-                    .max("lessThanLong", 5)
-                    .max("lessThanFloat", 5)
-                    .max("lessThanDouble", 5)
-                    .max("lessThanBigDecimal", 5)
-                    .positive("positiveInt")
-                    .positive("positiveLong")
-                    .positive("positiveFloat")
-                    .positive("positiveDouble")
-                    .positive("positiveBigDecimal")
-                    .negative("negativeInt")
-                    .negative("negativeLong")
-                    .negative("negativeFloat")
-                    .negative("negativeDouble")
-                    .negative("negativeBigDecimal")
-                    .between("betweenInt", -3, 5)
-                    .between("betweenLong", -3, 5)
-                    .between("betweenFloat", -3, 5)
-                    .between("betweenDouble", -3, 5)
-                    .between("betweenBigDecimal", -3, 5)
-                    .positiveOrZero("positiveOrZeroInt")
-                    .positiveOrZero("positiveOrZeroLong")
-                    .positiveOrZero("positiveOrZeroFloat")
-                    .positiveOrZero("positiveOrZeroDouble")
-                    .positiveOrZero("positiveOrZeroBigDecimal")
-                    .negativeOrZero("negativeOrZeroInt")
-                    .negativeOrZero("negativeOrZeroLong")
-                    .negativeOrZero("negativeOrZeroFloat")
-                    .negativeOrZero("negativeOrZeroDouble")
-                    .negativeOrZero("negativeOrZeroBigDecimal")
-                    .future("futureDate")
-                    .future("futureDateTime")
-                    .future("futureOffsetDateTime")
-                    .past("pastDate")
-                    .past("pastDateTime")
-                    .past("pastOffsetDateTime")
-                    .validBean("validObject")
-                    .nullable("nullable")
-                    .unchecked("notValidated")
-                    .isCompliant();
+    public static class TestValidationAssert extends BaseValidationAssert<BaseRuleBuilder<?>> {
+        protected TestValidationAssert() {
+            super(new TestRuleBuilder());
+        }
+
+        public static TestValidationAssert assertThatValidation() {
+            return new TestValidationAssert();
+        }
+
+        public static final class TestRuleBuilder extends BaseRuleBuilder<TestRuleBuilder> {
+
         }
     }
 }

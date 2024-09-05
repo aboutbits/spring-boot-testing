@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 public class InertValueSource implements ValueSource {
     @Override
-    public Stream<Object> values(Class<?> propertyClass, Object... args) {
+    public <T> Stream<T> values(Class<T> propertyClass, Object... args) {
         return Stream.empty();
     }
 }
