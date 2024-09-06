@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.validation.core;
 
+import it.aboutbits.springboot.toolbox.type.CustomType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -16,7 +17,11 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
     @Getter(AccessLevel.PROTECTED)
     private final R ruleBuilder;
 
-    protected static final Set<Class<?>> NON_BEAN_TYPES = new HashSet<>();
+    protected static final Set<Class<?>> NON_BEAN_TYPES = new HashSet<>(
+            Set.of(
+                    CustomType.class
+            )
+    );
 
     private Object parameterUnderTest;
 
