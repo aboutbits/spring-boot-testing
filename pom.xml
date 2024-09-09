@@ -23,7 +23,7 @@
         <dependency>
             <groupId>it.aboutbits</groupId>
             <artifactId>spring-boot-toolbox</artifactId>
-            <version>BUILD-SNAPSHOT</version>
+            <version>1.0.0-RC1</version>
         </dependency>
 
         <dependency>
@@ -36,13 +36,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>24.1.0</version>
         </dependency>
 
         <!-- Testing -->

@@ -2,7 +2,7 @@ package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -47,7 +47,7 @@ public class BiggerThanValueSource implements ValueSource {
         throw new IllegalArgumentException("Property class not supported!");
     }
 
-    @NotNull
+    @NonNull
     private static Stream<Integer> getIntegerStream(Object[] args) {
         var minValue = Long.valueOf((long) args[0]).intValue() + 1;
         var maxValue = Integer.MAX_VALUE;
@@ -58,7 +58,7 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NotNull
+    @NonNull
     private static Stream<Long> getLongStream(Object[] args) {
         var minValue = (long) args[0] + 1;
         var maxValue = Long.MAX_VALUE;
@@ -69,7 +69,7 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NotNull
+    @NonNull
     private static Stream<Float> getFloatStream(Object[] args) {
         var minValue = Long.valueOf((long) args[0]).floatValue() + 0.1f;
         var maxValue = Float.MAX_VALUE;
@@ -82,7 +82,7 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NotNull
+    @NonNull
     private static Stream<Double> getDoubleStream(Object[] args) {
         var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
         var maxValue = Double.MAX_VALUE;
@@ -93,7 +93,7 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NotNull
+    @NonNull
     private static Stream<ScaledBigDecimal> getScaledBigDecimalStream(Object[] args) {
         var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
         var maxValue = Double.MAX_VALUE;
@@ -104,7 +104,7 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NotNull
+    @NonNull
     private static Stream<BigDecimal> getBigDecimalStream(Object[] args) {
         var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
         var maxValue = Double.MAX_VALUE;

@@ -6,8 +6,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -145,7 +144,7 @@ final class RuleValidator<P> {
         }
     }
 
-    @NotNull
+    @NonNull
     @SneakyThrows(ReflectiveOperationException.class)
     private static <P> Stream<?> getValues(Rule rule, P parameterUnderTest) {
         var source = (ValueSource) rule.getValueSource().getDeclaredConstructors()[0].newInstance();
@@ -204,12 +203,12 @@ final class RuleValidator<P> {
             // Create a copy with the altered property value
             return (T) constructor.newInstance(newPropertyValues);
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(
+            throw new RuleValidationException(
                     "Error creating copy with altered property. Maybe there is no all-args-constructor?",
                     e
             );
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            throw new RuntimeException("Error creating copy with altered property: " + property, e);
+            throw new RuleValidationException("Error creating copy with altered property: " + property, e);
         }
     }
 
@@ -243,14 +242,15 @@ final class RuleValidator<P> {
                 || field.getAnnotation(jakarta.annotation.Nullable.class) != null;
     }
 
-    private static @NotNull Field getFieldOrFail(String propertyName, Object object) {
+    @NonNull
+    private static Field getFieldOrFail(String propertyName, Object object) {
         var clazz = object.getClass();
 
         Field field = null;
         try {
             field = clazz.getDeclaredField(propertyName);
         } catch (NoSuchFieldException e) {
-            throw new RuntimeException("Property does not exist: " + propertyName, e);
+            throw new RuleValidationException("Property does not exist: " + propertyName, e);
         }
         return field;
     }
