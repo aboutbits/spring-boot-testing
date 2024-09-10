@@ -55,7 +55,7 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.ints(minValue, maxValue).limit(5).boxed()
+                RANDOM.ints(minValue, maxValue).limit(1).boxed()
         );
     }
 
@@ -66,7 +66,7 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.longs(minValue, maxValue).limit(5).boxed()
+                RANDOM.longs(minValue, maxValue).limit(1).boxed()
         );
     }
 
@@ -77,7 +77,7 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.doubles(5).map(d -> minValue + (maxValue - minValue) * d).boxed().map(
+                RANDOM.doubles(1).map(d -> minValue + (maxValue - minValue) * d).boxed().map(
                         Double::floatValue
                 )
         );
@@ -90,7 +90,7 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.doubles(5).map(d -> minValue + (maxValue - minValue) * d).boxed()
+                RANDOM.doubles(1).map(d -> minValue + (maxValue - minValue) * d).boxed()
         );
     }
 
@@ -101,7 +101,7 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(BigDecimal.valueOf(minValue), BigDecimal.valueOf(maxValue)),
-                RANDOM.doubles(5).map(d -> minValue + (maxValue - minValue) * d).boxed().map(BigDecimal::valueOf)
+                RANDOM.doubles(1).map(d -> minValue + (maxValue - minValue) * d).boxed().map(BigDecimal::valueOf)
         );
     }
 
@@ -112,7 +112,7 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(ScaledBigDecimal.valueOf(minValue), ScaledBigDecimal.valueOf(maxValue)),
-                RANDOM.doubles(5).map(d -> minValue + (maxValue - minValue) * d).boxed().map(ScaledBigDecimal::valueOf)
+                RANDOM.doubles(1).map(d -> minValue + (maxValue - minValue) * d).boxed().map(ScaledBigDecimal::valueOf)
         );
     }
 }

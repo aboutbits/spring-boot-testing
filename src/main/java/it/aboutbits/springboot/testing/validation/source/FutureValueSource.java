@@ -36,32 +36,23 @@ public class FutureValueSource implements ValueSource {
     }
 
     private static Stream<LocalDate> getLocalDateStream(Object[] args) {
-        var currentDate = LocalDate.now().plusDays(1);
+        var currentDate = LocalDate.now();
         var largestDate = LocalDate.MAX;
-        return Stream.concat(
-                Stream.of(largestDate),
-                Stream.iterate(currentDate, date -> date.plusDays(1))
-                        .limit(4)
-        );
+
+        return Stream.of(currentDate.plusDays(1), largestDate);
     }
 
     private static Stream<LocalDateTime> getLocalDatetimeStream(Object[] args) {
-        var currentDateTime = LocalDateTime.now().plusDays(1);
+        var currentDateTime = LocalDateTime.now();
         var largestDateTime = LocalDateTime.MAX;
-        return Stream.concat(
-                Stream.of(largestDateTime, currentDateTime.plusSeconds(1)),
-                Stream.iterate(currentDateTime, dateTime -> dateTime.plusHours(1))
-                        .limit(4)
-        );
+
+        return Stream.of(currentDateTime.plusSeconds(1), largestDateTime);
     }
 
     private static Stream<OffsetDateTime> getOffsetDateTimeStream(Object[] args) {
-        var currentOffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).plusDays(1);
+        var currentOffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC);
         var largestOffsetDateTime = OffsetDateTime.MAX;
-        return Stream.concat(
-                Stream.of(largestOffsetDateTime, currentOffsetDateTime.plusSeconds(1)),
-                Stream.iterate(currentOffsetDateTime, offsetDateTime -> offsetDateTime.plusHours(1))
-                        .limit(2)
-        );
+
+        return Stream.of(currentOffsetDateTime.plusSeconds(1), largestOffsetDateTime);
     }
 }

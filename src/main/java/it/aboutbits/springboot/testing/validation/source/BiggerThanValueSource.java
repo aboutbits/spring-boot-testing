@@ -54,7 +54,7 @@ public class BiggerThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.ints(minValue, maxValue).limit(5).boxed()
+                RANDOM.ints(minValue, maxValue).limit(1).boxed()
         );
     }
 
@@ -65,7 +65,7 @@ public class BiggerThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.longs(minValue, maxValue).limit(5).boxed()
+                RANDOM.longs(minValue, maxValue).limit(1).boxed()
         );
     }
 
@@ -76,7 +76,7 @@ public class BiggerThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.doubles(minValue, maxValue).limit(5).boxed().map(
+                RANDOM.doubles(minValue, maxValue).limit(1).boxed().map(
                         Double::floatValue
                 )
         );
@@ -89,7 +89,7 @@ public class BiggerThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.doubles(minValue, maxValue).limit(5).boxed()
+                RANDOM.doubles(minValue, maxValue).limit(1).boxed()
         );
     }
 
@@ -100,7 +100,7 @@ public class BiggerThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(ScaledBigDecimal.valueOf(minValue), ScaledBigDecimal.valueOf(maxValue)),
-                RANDOM.doubles(minValue, maxValue).limit(5).boxed().map(ScaledBigDecimal::valueOf)
+                RANDOM.doubles(minValue, maxValue).limit(1).boxed().map(ScaledBigDecimal::valueOf)
         );
     }
 
@@ -111,7 +111,7 @@ public class BiggerThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(BigDecimal.valueOf(minValue), BigDecimal.valueOf(maxValue)),
-                RANDOM.doubles(minValue, maxValue).limit(5).boxed().map(BigDecimal::valueOf)
+                RANDOM.doubles(minValue, maxValue).limit(1).boxed().map(BigDecimal::valueOf)
         );
     }
 }

@@ -27,11 +27,11 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * Then we check if an exception is raised.
  * We repeat this for each defined rule.
  * <p>
- * Additionally, we also check of @Valid or @Nullable is present where required according to the rules.
+ * Additionally, we also check if @Valid or @Nullable is present where required according to the rules.
  * Also, we enforce that all properties must have at least one rule (with a rule existing that says "no-rule").
  * </p>
  *
- * @parameterUnderTest A valid parameter we can use as the basis for our mutations. Validation for the unmodified parameter MUST succeed.
+ * @parameterUnderTest A valid parameter that we can use as the basis for our mutations. Validation for the unmodified parameter MUST succeed.
  * @functionToCallWithParameter Optional. Instead of directly using bean validation, we can also validate a real function call. This makes sure the parameter is actually annotated with @Valid as well and that the class is using @Validated.
  * @rules The list of rules to validate.
  * @nonBeanTypes This is a whitelist that holds classes that don't implicitly require @Valid. We assume that @Valid is required

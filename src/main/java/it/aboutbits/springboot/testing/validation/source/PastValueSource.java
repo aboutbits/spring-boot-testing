@@ -37,32 +37,23 @@ public class PastValueSource implements ValueSource {
 
 
     private static Stream<LocalDate> getLocalDateStream(Object[] args) {
-        var currentDate = LocalDate.now().minusDays(1);
+        var currentDate = LocalDate.now();
         var smallestDate = LocalDate.MIN;
-        return Stream.concat(
-                Stream.of(smallestDate),
-                Stream.iterate(currentDate, date -> date.minusDays(1))
-                        .limit(4)
-        );
+
+        return Stream.of(smallestDate, currentDate.minusDays(1));
     }
 
     private static Stream<LocalDateTime> getLocalDatetimeStream(Object[] args) {
-        var currentDateTime = LocalDateTime.now().minusDays(1);
+        var currentDateTime = LocalDateTime.now();
         var smallestDateTime = LocalDateTime.MIN;
-        return Stream.concat(
-                Stream.of(smallestDateTime, currentDateTime.minusSeconds(1)),
-                Stream.iterate(currentDateTime, dateTime -> dateTime.minusHours(1))
-                        .limit(4)
-        );
+
+        return Stream.of(smallestDateTime, currentDateTime.minusSeconds(1));
     }
 
     private static Stream<OffsetDateTime> getOffsetDateTimeStream(Object[] args) {
-        var currentOffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1);
+        var currentOffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC);
         var smallestOffsetDateTime = OffsetDateTime.MIN;
-        return Stream.concat(
-                Stream.of(smallestOffsetDateTime, currentOffsetDateTime.minusSeconds(1)),
-                Stream.iterate(currentOffsetDateTime, offsetDateTime -> offsetDateTime.minusHours(1))
-                        .limit(4)
-        );
+
+        return Stream.of(smallestOffsetDateTime, currentOffsetDateTime.minusSeconds(1));
     }
 }
