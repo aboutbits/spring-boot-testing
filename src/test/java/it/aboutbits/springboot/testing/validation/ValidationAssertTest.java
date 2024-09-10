@@ -420,8 +420,8 @@ class ValidationAssertTest {
         );
     }
 
-    public static class TestValidationAssert extends BaseValidationAssert<BaseRuleBuilder<?>> {
-        protected TestValidationAssert() {
+    public static final class TestValidationAssert extends BaseValidationAssert<BaseRuleBuilder<?>> {
+        private TestValidationAssert() {
             super(new TestRuleBuilder());
         }
 

@@ -17,6 +17,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
     @Getter(AccessLevel.PROTECTED)
     private final R ruleBuilder;
 
+    // This keeps track of classes that are not required to have a @Valid annotation.
     protected static final Set<Class<?>> NON_BEAN_TYPES = new HashSet<>(
             Set.of(
                     CustomType.class
@@ -28,6 +29,11 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
     @Setter(AccessLevel.PRIVATE)
     private Consumer<?> functionToCallWithParameter = null;
 
+    /**
+     * Configure a class that is not required to have a @Valid annotation. Sub-structures are assumed to always require @Valid.
+     *
+     * @param type The class to whitelist.
+     */
     public static void registerNonBeanType(Class<?> type) {
         NON_BEAN_TYPES.add(type);
     }

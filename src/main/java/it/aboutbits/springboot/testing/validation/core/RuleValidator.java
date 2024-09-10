@@ -3,6 +3,7 @@ package it.aboutbits.springboot.testing.validation.core;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -20,6 +21,22 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+/**
+ * The main idea of the RuleValidator is to take in a valid parameter and then mutate it.
+ * Each mutation changes exactly one property`s value.
+ * Then we check if an exception is raised.
+ * We repeat this for each defined rule.
+ * <p>
+ * Additionally, we also check of @Valid or @Nullable is present where required according to the rules.
+ * Also, we enforce that all properties must have at least one rule (with a rule existing that says "no-rule").
+ * </p>
+ *
+ * @parameterUnderTest A valid parameter we can use as the basis for our mutations. Validation for the unmodified parameter MUST succeed.
+ * @functionToCallWithParameter Optional. Instead of directly using bean validation, we can also validate a real function call. This makes sure the parameter is actually annotated with @Valid as well and that the class is using @Validated.
+ * @rules The list of rules to validate.
+ * @nonBeanTypes This is a whitelist that holds classes that don't implicitly require @Valid. We assume that @Valid is required
+ * for all substructures.
+ */
 final class RuleValidator<P> {
     private static final ValidatorFactory VALIDATOR_FACTORY = Validation.buildDefaultValidatorFactory();
 
@@ -48,13 +65,41 @@ final class RuleValidator<P> {
 
         var validator = VALIDATOR_FACTORY.getValidator();
 
+        var propertiesWithRules = getPropertyNamesThatHaveRules(rules);
+
+        assertThatValidationIsCompliantForEachProperty(
+                rules,
+                parameterUnderTest,
+                functionToCallWithParameter,
+                validator
+        );
+
+        assertThatValidAnnotationsArePresent(rules, propertiesWithRules, parameterUnderTest);
+
+        assertThatNullableAnnotationsArePresent(rules, propertiesWithRules, parameterUnderTest);
+
+        assertThatAllPropertiesHaveRules(parameterUnderTest, propertiesWithRules);
+
+        checkIfNestedValidationIsEnabledForNestedRecords(parameterUnderTest, nonBeanTypes);
+    }
+
+    private static HashSet<String> getPropertyNamesThatHaveRules(List<Rule> rules) {
         // Create a set to keep track of properties that have validation rules
         var propertiesWithRules = new HashSet<String>();
-
-        // Iterate through the rules and validate each property
         for (var rule : rules) {
             propertiesWithRules.add(rule.getProperty());
+        }
+        return propertiesWithRules;
+    }
 
+    private static <P> void assertThatValidationIsCompliantForEachProperty(
+            List<Rule> rules,
+            P parameterUnderTest,
+            Consumer<P> functionToCallWithParameter,
+            Validator validator
+    ) {
+        // Iterate through the rules and validate each property
+        for (var rule : rules) {
             var values = getValues(rule, parameterUnderTest);
             values.forEach(alteredValue -> {
                 // Create a copy of the original object
@@ -81,7 +126,13 @@ final class RuleValidator<P> {
                 }
             });
         }
+    }
 
+    private static <P> void assertThatValidAnnotationsArePresent(
+            List<Rule> rules,
+            HashSet<String> propertiesWithRules,
+            P parameterUnderTest
+    ) {
         var propertiesWithValid = rules.stream()
                 .filter(Rule::isRequireValid)
                 .map(Rule::getProperty)
@@ -94,7 +145,13 @@ final class RuleValidator<P> {
                     .withFailMessage("Missing @Valid annotation for property: " + property)
                     .isTrue();
         }
+    }
 
+    private static <P> void assertThatNullableAnnotationsArePresent(
+            List<Rule> rules,
+            HashSet<String> propertiesWithRules,
+            P parameterUnderTest
+    ) {
         var propertiesWithNullable = rules.stream()
                 .filter(Rule::isRequireNullable)
                 .map(Rule::getProperty)
@@ -107,7 +164,12 @@ final class RuleValidator<P> {
                     .withFailMessage("Missing @Nullable annotation for property: " + property + ". Note: This does not work with `org.jetbrains.annotations.Nullable` because of their retention policy. Use `org.springframework.lang.Nullable` or `jakarta.annotation.Nullable` instead.")
                     .isTrue();
         }
+    }
 
+    private static <P> void assertThatAllPropertiesHaveRules(
+            P parameterUnderTest,
+            HashSet<String> propertiesWithRules
+    ) {
         // Check if all properties have rules (you can also handle this differently based on your needs)
         var allProperties = getAllPropertiesOf(parameterUnderTest);
 
@@ -120,8 +182,6 @@ final class RuleValidator<P> {
                         missingProperties
                 ) + "]")
                 .isEmpty();
-
-        checkIfNestedValidationIsEnabledForNestedRecords(parameterUnderTest, nonBeanTypes);
     }
 
     private static <P> void checkIfNestedValidationIsEnabledForNestedRecords(
