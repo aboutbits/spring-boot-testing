@@ -33,6 +33,7 @@ public class LessThanValueSource implements ValueSource {
         TYPE_SOURCES.put(ScaledBigDecimal.class, LessThanValueSource::getScaledBigDecimalStream);
     }
 
+    @SuppressWarnings("unused")
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {
         TYPE_SOURCES.put(type, source);
     }

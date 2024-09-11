@@ -34,6 +34,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
      *
      * @param type The class to whitelist.
      */
+    @SuppressWarnings("unused")
     public static void registerNonBeanType(Class<?> type) {
         NON_BEAN_TYPES.add(type);
     }
@@ -48,16 +49,18 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
     public static final class CallBuilder<R extends BaseRuleBuilder<?>, P> {
         private final BaseValidationAssert<R> parent;
 
+        @SuppressWarnings("unused")
         public R calling(@NonNull Consumer<P> functionToCallWithParameter) {
             parent.setFunctionToCallWithParameter(functionToCallWithParameter);
             return parent.ruleBuilder;
         }
 
+        @SuppressWarnings("unused")
         public R usingBeanValidation() {
             return parent.ruleBuilder;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unused", "unchecked"})
         public <ID> R calling(
                 @NonNull BiConsumer<ID, P> functionToCallWithParameter,
                 @NonNull ID id

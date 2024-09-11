@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 public class NullValueSource implements ValueSource {
     private static final Map<Class<?>, Function<Object[], Stream<?>>> TYPE_SOURCES = new HashMap<>();
 
+    @SuppressWarnings("unused")
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {
         TYPE_SOURCES.put(type, source);
     }
