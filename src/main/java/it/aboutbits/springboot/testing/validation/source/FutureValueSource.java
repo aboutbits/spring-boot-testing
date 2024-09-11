@@ -20,6 +20,7 @@ public class FutureValueSource implements ValueSource {
         TYPE_SOURCES.put(OffsetDateTime.class, FutureValueSource::getOffsetDateTimeStream);
     }
 
+    @SuppressWarnings("unused")
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {
         TYPE_SOURCES.put(type, source);
     }

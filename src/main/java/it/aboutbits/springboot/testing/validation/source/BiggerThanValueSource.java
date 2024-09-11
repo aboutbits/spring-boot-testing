@@ -32,6 +32,7 @@ public class BiggerThanValueSource implements ValueSource {
         TYPE_SOURCES.put(ScaledBigDecimal.class, BiggerThanValueSource::getScaledBigDecimalStream);
     }
 
+    @SuppressWarnings("unchecked")
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {
         TYPE_SOURCES.put(type, source);
     }

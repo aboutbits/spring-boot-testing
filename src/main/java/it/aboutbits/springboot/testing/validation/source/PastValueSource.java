@@ -20,6 +20,7 @@ public class PastValueSource implements ValueSource {
         TYPE_SOURCES.put(OffsetDateTime.class, PastValueSource::getOffsetDateTimeStream);
     }
 
+    @SuppressWarnings("unused")
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {
         TYPE_SOURCES.put(type, source);
     }

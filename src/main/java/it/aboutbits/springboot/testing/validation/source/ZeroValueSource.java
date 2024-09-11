@@ -29,6 +29,7 @@ public class ZeroValueSource implements ValueSource {
         TYPE_SOURCES.put(ScaledBigDecimal.class, (Object[] args) -> Stream.of(ScaledBigDecimal.valueOf(0)));
     }
 
+    @SuppressWarnings("unused")
     public static void registerType(Class<?> type, Function<Object[], Stream<?>> source) {
         TYPE_SOURCES.put(type, source);
     }
