@@ -2,6 +2,7 @@ package it.aboutbits.springboot.testing.testdata.base;
 
 import it.aboutbits.springboot.testing.spring.BeanAccessor;
 import jakarta.persistence.EntityManager;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -29,7 +30,7 @@ public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDa
         super(count);
     }
 
-    public CREATOR modifyParameter(BiFunction<PARAMETER, Integer, PARAMETER> parameterMutator) {
+    public CREATOR modifyParameter(@NonNull BiFunction<PARAMETER, Integer, PARAMETER> parameterMutator) {
         this.parameterMutator = (parameter, index) -> {
             mutatorCalled = true;
             return parameterMutator.apply(parameter, index);
@@ -38,7 +39,7 @@ public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDa
         return (CREATOR) this;
     }
 
-    public CREATOR modifyParameter(UnaryOperator<PARAMETER> parameterMutator) {
+    public CREATOR modifyParameter(@NonNull UnaryOperator<PARAMETER> parameterMutator) {
         this.parameterMutator = (parameter, index) -> {
             mutatorCalled = true;
             return parameterMutator.apply(parameter);
@@ -47,12 +48,12 @@ public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDa
         return (CREATOR) this;
     }
 
-    public CREATOR modifyResult(ObjIntConsumer<ITEM> resultMutator) {
+    public CREATOR modifyResult(@NonNull ObjIntConsumer<ITEM> resultMutator) {
         this.resultMutator = resultMutator;
         return (CREATOR) this;
     }
 
-    public CREATOR modifyResult(Consumer<ITEM> resultMutator) {
+    public CREATOR modifyResult(@NonNull Consumer<ITEM> resultMutator) {
         this.resultMutator = (item, index) -> resultMutator.accept(item);
         return (CREATOR) this;
     }
@@ -79,7 +80,7 @@ public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDa
         return result;
     }
 
-    protected ITEM saveMutation(ITEM item) {
+    protected ITEM saveMutation(@NonNull ITEM item) {
         var entityManager = BeanAccessor.getBean(EntityManager.class);
         var transactionTemplate = BeanAccessor.getBean(TransactionTemplate.class);
 
