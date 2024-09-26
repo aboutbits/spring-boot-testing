@@ -1,5 +1,7 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
+import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -26,11 +28,11 @@ public abstract class TestDataCreator<ITEM> {
         return create();
     }
 
-    public List<ITEM> returnSorted(Comparator<ITEM> comparator) {
+    public List<ITEM> returnSorted(@NonNull Comparator<ITEM> comparator) {
         return returnAll().stream().sorted(comparator).toList();
     }
 
-    public <U extends Comparable<? super U>> List<ITEM> returnSorted(Function<ITEM, U> comparator) {
+    public <U extends Comparable<? super U>> List<ITEM> returnSorted(@NonNull Function<ITEM, U> comparator) {
         return returnAll().stream()
                 .sorted(Comparator.comparing(comparator))
                 .toList();
