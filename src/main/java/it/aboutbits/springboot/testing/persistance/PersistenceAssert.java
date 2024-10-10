@@ -20,19 +20,26 @@ public final class PersistenceAssert {
     }
 
     @SuppressWarnings("unused")
-    public static <E extends Identified<?> & ChangeAware> WriteOperationAsserter<E> assertThatEntity(@NonNull E before) {
-        return new WriteOperationAsserter<>(getEntityManager(), before);
+    public static <ID extends EntityId<?>, E extends Identified<ID> & ChangeAware, M extends Identified<ID> & ChangeAware> WriteOperationAsserter<ID, E, M> assertThatEntity(
+            @NonNull E before,
+            @NonNull Class<M> modelClass
+    ) {
+        return new WriteOperationAsserter<>(getEntityManager(), before, modelClass);
     }
 
     @SuppressWarnings("unused")
-    public static <ID extends EntityId<?>> WriteOperationIdAsserter<ID> assertThatEntity(@NonNull ID id) {
-        return new WriteOperationIdAsserter<>(getEntityManager(), id);
+    public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntity(
+            @NonNull ID id,
+            @NonNull Class<M> modelClass
+    ) {
+        return new WriteOperationIdAsserter<>(getEntityManager(), id, modelClass);
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static final class WriteOperationAsserter<E extends Identified<?> & ChangeAware> {
+    public static final class WriteOperationAsserter<ID extends EntityId<?>, E extends Identified<ID> & ChangeAware, M extends Identified<ID> & ChangeAware> {
         private final EntityManager entityManager;
         private final E entity;
+        private final Class<M> modelClass;
 
         @SuppressWarnings("unused")
         public void hasBeenCreatedInDatabase() {
@@ -90,35 +97,19 @@ public final class PersistenceAssert {
             assertThat(savedInstance).isNotNull();
         }
 
-        @SuppressWarnings("unchecked")
-        private E getSavedInstance() {
-            return (E) entityManager.find(
-                    entity.getClass(),
+        private M getSavedInstance() {
+            return entityManager.find(
+                    modelClass,
                     entity.getId()
             );
         }
     }
 
-    public static final class WriteOperationIdAsserter<ID extends EntityId<?>> {
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class WriteOperationIdAsserter<ID extends EntityId<?>, M extends Identified<ID>> {
         private final EntityManager entityManager;
         private final ID id;
-        private final Class<? extends Identified<? extends ID>> clazz;
-
-        @SuppressWarnings("unchecked")
-        private WriteOperationIdAsserter(
-                EntityManager entityManager,
-                ID id
-        ) {
-            this.entityManager = entityManager;
-            this.id = id;
-
-            var enclosingClass = id.getClass().getEnclosingClass();
-            if (Identified.class.isAssignableFrom(enclosingClass)) {
-                this.clazz = (Class<? extends Identified<? extends ID>>) enclosingClass;
-            } else {
-                throw new IllegalArgumentException("EntityId is not a subclass of Identified!");
-            }
-        }
+        private final Class<M> modelClass;
 
         @SuppressWarnings("unused")
         public void isAbsentInDatabase() {
@@ -136,9 +127,9 @@ public final class PersistenceAssert {
             assertThat(savedInstance).isNotNull();
         }
 
-        private Object getSavedInstance() {
+        private M getSavedInstance() {
             return entityManager.find(
-                    clazz,
+                    modelClass,
                     id
             );
         }

@@ -1,10 +1,7 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
-import it.aboutbits.springboot.testing.spring.BeanAccessor;
-import jakarta.persistence.EntityManager;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,17 +77,5 @@ public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDa
         return result;
     }
 
-    protected ITEM saveMutation(@NonNull ITEM item) {
-        var entityManager = BeanAccessor.getBean(EntityManager.class);
-        var transactionTemplate = BeanAccessor.getBean(TransactionTemplate.class);
-
-        return transactionTemplate.execute(status -> {
-            try {
-                return entityManager.merge(item);
-            } catch (Exception e) {
-                status.setRollbackOnly();
-                throw e;
-            }
-        });
-    }
+    protected abstract ITEM saveMutation(@NonNull ITEM item);
 }
