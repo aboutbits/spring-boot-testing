@@ -20,6 +20,16 @@
                     <url>https://maven.pkg.github.com/aboutbits/*</url>
                 </repository>
             </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>central</id>
+                    <url>https://repo1.maven.org/maven2</url>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/aboutbits/*</url>
+                </pluginRepository>
+            </pluginRepositories>
         </profile>
     </profiles>
 

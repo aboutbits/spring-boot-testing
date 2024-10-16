@@ -19,11 +19,20 @@
         <java.version>21</java.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>it.aboutbits</groupId>
+                <artifactId>spring-boot-toolbox</artifactId>
+                <version>1.0.0-RC4</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>it.aboutbits</groupId>
             <artifactId>spring-boot-toolbox</artifactId>
-            <version>1.0.0-RC2</version>
         </dependency>
 
         <dependency>
@@ -59,12 +68,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.5.0</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
-                    <suppressionsFileExpression>
-                        checkstyle-suppressions.xml
-                    </suppressionsFileExpression>
+                    <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
@@ -83,7 +90,12 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>10.3.4</version>
+                        <version>10.18.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>it.aboutbits</groupId>
+                        <artifactId>java-checkstyle-config</artifactId>
+                        <version>1.0.1</version>
                     </dependency>
                 </dependencies>
             </plugin>

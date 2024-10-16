@@ -1,4 +1,4 @@
-package it.aboutbits.springboot.testing.persistance;
+package it.aboutbits.springboot.testing.persistence;
 
 import it.aboutbits.springboot.testing.spring.BeanAccessor;
 import it.aboutbits.springboot.toolbox.persistence.ChangeAware;
