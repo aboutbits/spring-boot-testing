@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
+        <version>3.3.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -24,7 +24,7 @@
             <dependency>
                 <groupId>it.aboutbits</groupId>
                 <artifactId>spring-boot-toolbox</artifactId>
-                <version>1.0.0-RC4</version>
+                <version>1.0.0-RC6</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -51,6 +51,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>2.4.1</version>
         </dependency>
     </dependencies>
 

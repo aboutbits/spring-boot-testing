@@ -1,6 +1,7 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
 import lombok.NonNull;
+import net.datafaker.Faker;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,6 +11,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 public abstract class TestDataCreator<ITEM> {
+    protected static final Faker FAKER = new Faker();
+
     protected final int numberOfItems;
 
     protected TestDataCreator(int numberIfItems) {
