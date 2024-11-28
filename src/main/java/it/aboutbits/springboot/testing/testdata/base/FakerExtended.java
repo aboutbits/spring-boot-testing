@@ -35,6 +35,9 @@ public class FakerExtended extends Faker {
 
     public <T extends Enum<?>> T randomEnumValue(Class<T> enumClass) {
         var values = enumClass.getEnumConstants();
+        if (values.length == 0) {
+            throw new IllegalArgumentException("Enum class must have at least one value");
+        }
         return values[this.random().nextInt(values.length)];
     }
 }
