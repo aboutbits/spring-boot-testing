@@ -2,7 +2,6 @@ package it.aboutbits.springboot.testing.testdata.base;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import net.datafaker.Faker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.function.UnaryOperator;
 @SuppressWarnings("unchecked")
 @Slf4j
 public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDataCreator<CREATOR, ITEM, PARAMETER>, ITEM, PARAMETER> extends TestDataCreator<ITEM> {
-    protected static final Faker FAKER = new Faker();
+    protected static final FakerExtended FAKER = new FakerExtended();
 
     private boolean mutatorSet = false;
     private boolean mutatorCalled = false;
