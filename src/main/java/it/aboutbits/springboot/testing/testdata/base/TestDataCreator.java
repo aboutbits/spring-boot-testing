@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 public abstract class TestDataCreator<ITEM> {
+    protected static final FakerExtended FAKER = new FakerExtended();
+
     protected final int numberOfItems;
 
     protected TestDataCreator(int numberIfItems) {

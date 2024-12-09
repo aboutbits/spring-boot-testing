@@ -13,6 +13,8 @@ import java.util.function.UnaryOperator;
 @SuppressWarnings("unchecked")
 @Slf4j
 public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDataCreator<CREATOR, ITEM, PARAMETER>, ITEM, PARAMETER> extends TestDataCreator<ITEM> {
+    protected static final FakerExtended FAKER = new FakerExtended();
+
     private boolean mutatorSet = false;
     private boolean mutatorCalled = false;
 
