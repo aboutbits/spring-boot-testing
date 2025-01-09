@@ -14,8 +14,8 @@ public abstract class TestDataCreator<ITEM> {
 
     protected final int numberOfItems;
 
-    protected TestDataCreator(int numberIfItems) {
-        this.numberOfItems = numberIfItems;
+    protected TestDataCreator(int numberOfItems) {
+        this.numberOfItems = numberOfItems;
     }
 
     public void commit() {
