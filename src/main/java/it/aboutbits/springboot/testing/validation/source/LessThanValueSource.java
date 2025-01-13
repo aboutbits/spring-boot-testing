@@ -5,6 +5,7 @@ import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -17,6 +18,12 @@ public class LessThanValueSource implements ValueSource {
     private static final Random RANDOM = new Random();
 
     static {
+        TYPE_SOURCES.put(Byte.class, LessThanValueSource::getByteStream);
+        TYPE_SOURCES.put(byte.class, LessThanValueSource::getByteStream);
+
+        TYPE_SOURCES.put(Short.class, LessThanValueSource::getShortStream);
+        TYPE_SOURCES.put(short.class, LessThanValueSource::getShortStream);
+
         TYPE_SOURCES.put(Integer.class, LessThanValueSource::getIntegerStream);
         TYPE_SOURCES.put(int.class, LessThanValueSource::getIntegerStream);
 
@@ -29,6 +36,7 @@ public class LessThanValueSource implements ValueSource {
         TYPE_SOURCES.put(Double.class, LessThanValueSource::getDoubleStream);
         TYPE_SOURCES.put(double.class, LessThanValueSource::getDoubleStream);
 
+        TYPE_SOURCES.put(BigInteger.class, LessThanValueSource::getBigIntegerStream);
         TYPE_SOURCES.put(BigDecimal.class, LessThanValueSource::getBigDecimalStream);
         TYPE_SOURCES.put(ScaledBigDecimal.class, LessThanValueSource::getScaledBigDecimalStream);
     }
@@ -50,13 +58,37 @@ public class LessThanValueSource implements ValueSource {
     }
 
     @NonNull
+    private static Stream<Byte> getByteStream(Object[] args) {
+        var minValue = Byte.MIN_VALUE;
+        var maxValue = (byte) (Long.valueOf((long) args[0]).byteValue() - 1);
+
+        return Stream.concat(
+                Stream.of(minValue, maxValue),
+                RANDOM.ints(1, minValue, maxValue)
+                        .mapToObj(value -> Byte.valueOf((byte) value))
+        );
+    }
+
+    @NonNull
+    private static Stream<Short> getShortStream(Object[] args) {
+        var minValue = Short.MIN_VALUE;
+        var maxValue = (short) (Long.valueOf((long) args[0]).shortValue() - 1);
+
+        return Stream.concat(
+                Stream.of(minValue, maxValue),
+                RANDOM.ints(1, minValue, maxValue)
+                        .mapToObj(value -> Short.valueOf((short) value))
+        );
+    }
+
+    @NonNull
     private static Stream<Integer> getIntegerStream(Object[] args) {
         var minValue = Integer.MIN_VALUE;
         var maxValue = Long.valueOf((long) args[0]).intValue() - 1;
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.ints(minValue, maxValue).limit(1).boxed()
+                RANDOM.ints(1, minValue, maxValue).boxed()
         );
     }
 
@@ -67,7 +99,7 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.longs(minValue, maxValue).limit(1).boxed()
+                RANDOM.longs(1, minValue, maxValue).boxed()
         );
     }
 
@@ -78,7 +110,7 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.doubles(1).map(d -> minValue + (maxValue - minValue) * d).boxed().map(
+                RANDOM.doubles(1, minValue, maxValue).boxed().map(
                         Double::floatValue
                 )
         );
@@ -91,7 +123,20 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(minValue, maxValue),
-                RANDOM.doubles(1).map(d -> minValue + (maxValue - minValue) * d).boxed()
+                RANDOM.doubles(1, minValue, maxValue).boxed()
+        );
+    }
+
+    @NonNull
+    private static Stream<BigInteger> getBigIntegerStream(Object[] args) {
+        var minValue = Long.MIN_VALUE;
+        var maxValue = (long) args[0] - 1;
+
+        return Stream.concat(
+                Stream.of(BigInteger.valueOf(minValue), BigInteger.valueOf(maxValue)),
+                RANDOM.longs(1, minValue, maxValue).boxed().map(
+                        BigInteger::valueOf
+                )
         );
     }
 
@@ -102,7 +147,9 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(BigDecimal.valueOf(minValue), BigDecimal.valueOf(maxValue)),
-                RANDOM.doubles(1).map(d -> minValue + (maxValue - minValue) * d).boxed().map(BigDecimal::valueOf)
+                RANDOM.doubles(1, minValue, maxValue).boxed().map(
+                        BigDecimal::valueOf
+                )
         );
     }
 
@@ -113,7 +160,9 @@ public class LessThanValueSource implements ValueSource {
 
         return Stream.concat(
                 Stream.of(ScaledBigDecimal.valueOf(minValue), ScaledBigDecimal.valueOf(maxValue)),
-                RANDOM.doubles(1).map(d -> minValue + (maxValue - minValue) * d).boxed().map(ScaledBigDecimal::valueOf)
+                RANDOM.doubles(1, minValue, maxValue).boxed().map(
+                        ScaledBigDecimal::valueOf
+                )
         );
     }
 }

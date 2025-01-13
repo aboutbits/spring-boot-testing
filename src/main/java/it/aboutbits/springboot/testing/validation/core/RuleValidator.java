@@ -117,7 +117,8 @@ final class RuleValidator<P> {
                     // Check if there are any violations
                     assertThat(violations)
                             .withFailMessage(
-                                    "More than one property failed to validate during mutation. The supplied parameter is possibly contains invalid values.")
+                                    "More than one property failed to validate during mutation. The supplied parameter possibly contains invalid values."
+                            )
                             .hasSizeLessThan(2);
 
                     assertThat(violations)
