@@ -8,6 +8,7 @@ import net.datafaker.service.RandomService;
 
 import java.util.Locale;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.function.LongFunction;
 
 public class FakerExtended extends Faker {
@@ -46,6 +47,12 @@ public class FakerExtended extends Faker {
     public <T extends EntityId<Long>> T randomEntityId(LongFunction<T> constructor) {
         return constructor.apply(
                 super.random().nextInt(99999)
+        );
+    }
+
+    public <T extends EntityId<String>> T randomEntityId(Function<String, T> constructor) {
+        return constructor.apply(
+                super.internet().uuid()
         );
     }
 }
