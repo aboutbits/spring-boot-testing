@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
+import it.aboutbits.springboot.toolbox.type.identity.EntityId;
 import net.datafaker.Faker;
 import net.datafaker.service.FakeValuesService;
 import net.datafaker.service.FakerContext;
@@ -7,6 +8,7 @@ import net.datafaker.service.RandomService;
 
 import java.util.Locale;
 import java.util.Random;
+import java.util.function.LongFunction;
 
 public class FakerExtended extends Faker {
     public FakerExtended() {
@@ -39,5 +41,11 @@ public class FakerExtended extends Faker {
             throw new IllegalArgumentException("Enum class must have at least one value");
         }
         return values[this.random().nextInt(values.length)];
+    }
+
+    public <T extends EntityId<Long>> T randomEntityId(LongFunction<T> constructor) {
+        return constructor.apply(
+                super.random().nextInt(99999)
+        );
     }
 }
