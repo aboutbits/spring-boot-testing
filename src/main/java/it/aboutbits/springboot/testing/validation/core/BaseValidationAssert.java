@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -67,6 +68,18 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         ) {
             parent.setFunctionToCallWithParameter(
                     p -> functionToCallWithParameter.accept(id, (P) p)
+            );
+            return parent.ruleBuilder;
+        }
+
+        @SuppressWarnings({"unused", "unchecked"})
+        public <A, B> R calling(
+                @NonNull TriConsumer<A, B, P> functionToCallWithParameter,
+                @NonNull A a,
+                @NonNull B b
+        ) {
+            parent.setFunctionToCallWithParameter(
+                    p -> functionToCallWithParameter.accept(a, b, (P) p)
             );
             return parent.ruleBuilder;
         }
