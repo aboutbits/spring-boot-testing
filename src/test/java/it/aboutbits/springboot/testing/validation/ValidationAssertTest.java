@@ -15,8 +15,10 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.With;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.lang.Nullable;
+import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -32,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 import static it.aboutbits.springboot.testing.validation.ValidationAssertTest.TestValidationAssert.assertThatValidation;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class ValidationAssertTest {
@@ -524,6 +527,97 @@ class ValidationAssertTest {
                         .isCompliant());
     }
 
+    @Nested
+    @SuppressWarnings("java:S5778") // Suppress the warning for lambdas with more than one exception cause
+    class AnnotationChecking {
+        @Test
+        void givenValidatedClass_andValidParameter_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithValidParameter",
+                            String.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithValidParameter",
+                            Long.class,
+                            String.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithValidParameter",
+                            Long.class,
+                            Integer.class,
+                            String.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenNotValidatedClass_shouldAlwaysFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithoutValidated.class,
+                            "someMethodWithValidParameter",
+                            String.class
+                    ).isEnabled()
+            );
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithoutValidated.class,
+                            "someMethodWithValidParameter",
+                            Long.class,
+                            String.class
+                    ).isEnabled()
+            );
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithoutValidated.class,
+                            "someMethodWithValidParameter",
+                            Long.class,
+                            Integer.class,
+                            String.class
+                    ).isEnabled()
+            );
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithoutValidated.class,
+                            "someMethodWithoutValidParameter",
+                            String.class
+                    ).isEnabled()
+            );
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithoutValidated.class,
+                            "someMethodWithoutValidParameter",
+                            Long.class,
+                            String.class
+                    ).isEnabled()
+            );
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithoutValidated.class,
+                            "someMethodWithoutValidParameter",
+                            Long.class,
+                            Integer.class,
+                            String.class
+                    ).isEnabled()
+            );
+        }
+    }
+
     private static SomeValidParameter getSomeValidParameter() {
         return new SomeValidParameter(
                 // NotNull
@@ -652,6 +746,49 @@ class ValidationAssertTest {
         }
 
         public static final class TestRuleBuilder extends BaseRuleBuilder<TestRuleBuilder> {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassWithValidated {
+        public void someMethodWithValidParameter(@Valid String last) {
+        }
+
+        public void someMethodWithValidParameter(Long first, @Valid String last) {
+        }
+
+        public void someMethodWithValidParameter(Long first, Integer second, @Valid String last) {
+        }
+
+        public void someMethodWithoutValidParameter(String last) {
+        }
+
+        public void someMethodWithoutValidParameter(Long first, String last) {
+        }
+
+        public void someMethodWithoutValidParameter(Long first, Integer second, String last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    public static class ClassWithoutValidated {
+        public void someMethodWithValidParameter(@Valid String last) {
+        }
+
+        public void someMethodWithValidParameter(Long first, @Valid String last) {
+        }
+
+        public void someMethodWithValidParameter(Long first, Integer second, @Valid String last) {
+        }
+
+        public void someMethodWithoutValidParameter(String last) {
+        }
+
+        public void someMethodWithoutValidParameter(Long first, String last) {
+        }
+
+        public void someMethodWithoutValidParameter(Long first, Integer second, String last) {
         }
     }
 }
