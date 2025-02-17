@@ -1,17 +1,22 @@
 package it.aboutbits.springboot.testing.validation.core;
 
 import it.aboutbits.springboot.toolbox.type.CustomType;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.springframework.validation.annotation.Validated;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
@@ -44,6 +49,43 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         this.parameterUnderTest = parameterUnderTest;
         ruleBuilder.setTriggerValidation(this::assertValidation);
         return new CallBuilder<>(this);
+    }
+
+    @SuppressWarnings("unused")
+    public AnnotationChecker calling(
+            @NonNull Class<?> classUnderTest,
+            @NonNull String methodName,
+            @NonNull Class<?>... methodParameterTypes
+    ) {
+        return new AnnotationChecker(classUnderTest, methodName, methodParameterTypes);
+    }
+
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class AnnotationChecker {
+        private final Class<?> classUnderTest;
+        private final String methodName;
+        private final Class<?>[] methodParameterTypes;
+
+        public void isEnabled() {
+            assertThat(classUnderTest.isAnnotationPresent(Validated.class)).isTrue();
+
+            try {
+                var method = classUnderTest.getMethod(methodName, methodParameterTypes);
+                var parameter = method.getParameters()[method.getParameterCount() - 1];
+                assertThat(parameter.isAnnotationPresent(Valid.class)).isTrue();
+            } catch (NoSuchMethodException e) {
+                throw new AssertionError(
+                        "Method \"%s(%s)\" not found in class \"%s\"".formatted(
+                                methodName,
+                                String.join(
+                                        ", ",
+                                        Arrays.stream(methodParameterTypes).map(Class::getCanonicalName).toList()
+                                ),
+                                classUnderTest.getCanonicalName()
+                        ), e
+                );
+            }
+        }
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
