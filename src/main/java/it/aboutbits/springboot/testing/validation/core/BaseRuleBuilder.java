@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor
-public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<?>> implements
+public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<R>> implements
         ValidationRulesData,
         BetweenRule<R>,
         FutureRule<R>,
@@ -54,9 +54,10 @@ public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<?>> implements
         rules.add(rule);
     }
 
-    public BaseRuleBuilder<R> withAdditionalRules(Consumer<BaseRuleBuilder<R>> registrar) {
-        registrar.accept(this);
-        return this;
+    public <T extends BaseRuleBuilder<T>> T withAdditionalRules(Consumer<T> registrar) {
+        var self = (T) this;
+        registrar.accept(self);
+        return self;
     }
 
     public void isCompliant() {

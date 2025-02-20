@@ -32,6 +32,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Consumer;
 
 import static it.aboutbits.springboot.testing.validation.ValidationAssertTest.TestValidationAssert.assertThatValidation;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -640,6 +641,24 @@ class ValidationAssertTest {
                             .positiveOrZero("notNullPositiveOrZero")
                             .isCompliant()
             );
+        }
+
+        @Test
+        void usingRuleRegistrarShouldWork() {
+            var item = new SomeExtendingClass();
+            item.notNull = "notNull";
+            item.notNullPositiveOrZero = ScaledBigDecimal.ONE;
+
+            Consumer<TestValidationAssert.TestRuleBuilder> registrar = (ruleBuilder -> ruleBuilder
+                    .notNull("notNull")
+                    .notNull("notNull")
+                    .positiveOrZero("notNullPositiveOrZero")
+            );
+
+            assertThatValidation().of(item)
+                    .usingBeanValidation()
+                    .withAdditionalRules(registrar)
+                    .isCompliant();
         }
     }
 
