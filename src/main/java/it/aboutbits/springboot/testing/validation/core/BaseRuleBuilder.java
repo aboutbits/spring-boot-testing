@@ -23,6 +23,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<?>> implements
@@ -51,6 +52,11 @@ public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<?>> implements
     @Override
     public void addRule(@NonNull Rule rule) {
         rules.add(rule);
+    }
+
+    public BaseRuleBuilder<R> withAdditionalRules(Consumer<BaseRuleBuilder<R>> registrar) {
+        registrar.accept(this);
+        return this;
     }
 
     public void isCompliant() {
