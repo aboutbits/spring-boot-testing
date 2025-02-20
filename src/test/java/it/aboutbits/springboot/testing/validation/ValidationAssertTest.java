@@ -650,11 +650,10 @@ class ValidationAssertTest {
         item.notNull = "notNull";
         item.notNullPositiveOrZero = ScaledBigDecimal.ONE;
 
-        Consumer<TestValidationAssert.TestRuleBuilder> registrar = (ruleBuilder -> ruleBuilder
+        var registrar = (Consumer<TestValidationAssert.TestRuleBuilder>) ruleBuilder -> ruleBuilder
                 .notNull("notNull")
                 .notNull("notNull")
-                .positiveOrZero("notNullPositiveOrZero")
-        );
+                .positiveOrZero("notNullPositiveOrZero");
 
         assertThatValidation().of(item)
                 .usingBeanValidation()
