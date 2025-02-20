@@ -23,9 +23,10 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 @RequiredArgsConstructor
-public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<?>> implements
+public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<R>> implements
         ValidationRulesData,
         BetweenRule<R>,
         FutureRule<R>,
@@ -51,6 +52,12 @@ public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<?>> implements
     @Override
     public void addRule(@NonNull Rule rule) {
         rules.add(rule);
+    }
+
+    public <T extends BaseRuleBuilder<T>> T withAdditionalRules(Consumer<T> registrar) {
+        var self = (T) this;
+        registrar.accept(self);
+        return self;
     }
 
     public void isCompliant() {

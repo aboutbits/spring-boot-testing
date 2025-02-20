@@ -32,6 +32,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Consumer;
 
 import static it.aboutbits.springboot.testing.validation.ValidationAssertTest.TestValidationAssert.assertThatValidation;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -618,6 +619,49 @@ class ValidationAssertTest {
         }
     }
 
+    @Test
+    void shouldAlsoWorkForExtendedClassesEvenWithoutAllArgsConstructors() {
+        var item = new SomeExtendingClass();
+        item.notNull = "notNull";
+        item.notNullPositiveOrZero = ScaledBigDecimal.ONE;
+
+        assertThatValidation().of(item)
+                .usingBeanValidation()
+                .notNull("notNull")
+                .notNull("notNull")
+                .positiveOrZero("notNullPositiveOrZero")
+                .isCompliant();
+
+        var invalidItem = new SomeExtendingClass();
+
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                () -> assertThatValidation().of(invalidItem)
+                        .usingBeanValidation()
+                        .notNull("notNull")
+                        .notNull("notNull")
+                        .positiveOrZero("notNullPositiveOrZero")
+                        .isCompliant()
+        );
+    }
+
+    @Test
+    void usingRuleRegistrarShouldWork() {
+        var item = new SomeExtendingClass();
+        item.notNull = "notNull";
+        item.notNullPositiveOrZero = ScaledBigDecimal.ONE;
+
+        var registrar = (Consumer<TestValidationAssert.TestRuleBuilder>) ruleBuilder -> ruleBuilder
+                .notNull("notNull")
+                .notNull("notNull")
+                .positiveOrZero("notNullPositiveOrZero");
+
+        assertThatValidation().of(item)
+                .usingBeanValidation()
+                .withAdditionalRules(registrar)
+                .isCompliant();
+    }
+
+
     private static SomeValidParameter getSomeValidParameter() {
         return new SomeValidParameter(
                 // NotNull
@@ -790,5 +834,16 @@ class ValidationAssertTest {
 
         public void someMethodWithoutValidParameter(Long first, Integer second, String last) {
         }
+    }
+
+    public abstract static class SomeBaseClass {
+        @NotNull
+        protected String notNull;
+    }
+
+    public static class SomeExtendingClass extends SomeBaseClass {
+        @NotNull
+        @PositiveOrZero
+        private ScaledBigDecimal notNullPositiveOrZero;
     }
 }

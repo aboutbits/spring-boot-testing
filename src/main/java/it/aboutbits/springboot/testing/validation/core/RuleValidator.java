@@ -11,6 +11,8 @@ import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -217,10 +219,10 @@ final class RuleValidator<P> {
     private static <T> T createCopyWithAlteredProperty(T original, String property, Object alteredValue) {
         try {
             // Get the class of the original object
-            var clazz = original.getClass();
+            var clazz = (Class<T>) original.getClass();
 
             // Get all the declared fields of the class
-            var fields = clazz.getDeclaredFields();
+            var fields = getAllFields(clazz);
 
             // Create an array to hold the values of the original object's properties
             var propertyValues = new Object[fields.length];
@@ -234,10 +236,6 @@ final class RuleValidator<P> {
                 propertyValues[i] = fields[i].get(original);
                 parameterTypes[i] = fields[i].getType();
             }
-
-            // Get the constructor that accepts all properties as arguments
-            var constructor = clazz.getDeclaredConstructor(parameterTypes);
-            constructor.setAccessible(true);
 
             // Create an array to hold the new property values
             var newPropertyValues = new Object[propertyValues.length];
@@ -261,16 +259,44 @@ final class RuleValidator<P> {
                 }
             }
 
-            // Create a copy with the altered property value
-            return (T) constructor.newInstance(newPropertyValues);
+            return createCopyWithAlteredValues(clazz, parameterTypes, newPropertyValues, fields);
         } catch (NoSuchMethodException e) {
             throw new RuleValidationException(
-                    "Error creating copy with altered property. Maybe there is no all-args-constructor?",
+                    "Error creating copy with altered property. Maybe there is no eligible-constructor?",
                     e
             );
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuleValidationException("Error creating copy with altered property: " + property, e);
         }
+    }
+
+    private static <T> T createCopyWithAlteredValues(
+            Class<T> clazz,
+            Class<?>[] parameterTypes,
+            Object[] newPropertyValues,
+            Field[] fields
+    ) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        T instance = null;
+        try {
+            // Get the constructor that accepts all properties as arguments
+            var constructor = clazz.getDeclaredConstructor(parameterTypes);
+            constructor.setAccessible(true);
+
+            // Create a copy with the altered property value
+            instance = constructor.newInstance(newPropertyValues);
+        } catch (NoSuchMethodException e) {
+            // Get the no args constructor
+            var constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+
+            // Create a copy with the altered property value
+            instance = constructor.newInstance();
+            for (var i = 0; i < newPropertyValues.length; i++) {
+                fields[i].setAccessible(true);
+                fields[i].set(instance, newPropertyValues[i]);
+            }
+        }
+        return instance;
     }
 
     private static <T> Set<String> getAllPropertiesOf(T object) {
@@ -307,12 +333,23 @@ final class RuleValidator<P> {
     private static Field getFieldOrFail(String propertyName, Object object) {
         var clazz = object.getClass();
 
-        Field field = null;
-        try {
-            field = clazz.getDeclaredField(propertyName);
-        } catch (NoSuchFieldException e) {
-            throw new RuleValidationException("Property does not exist: " + propertyName, e);
+        var field = Arrays.stream(getAllFields(clazz))
+                .filter(
+                        f -> f.getName().equals(propertyName)
+                )
+                .findFirst();
+
+        return field.orElseThrow(() -> new RuleValidationException("Property does not exist: " + propertyName));
+    }
+
+    private static Field[] getAllFields(Class<?> initialClazz) {
+        Class<?> clazz = initialClazz;
+
+        var fields = new ArrayList<Field>();
+        while (clazz != null) {
+            fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+            clazz = clazz.getSuperclass();
         }
-        return field;
+        return fields.toArray(new Field[0]);
     }
 }
