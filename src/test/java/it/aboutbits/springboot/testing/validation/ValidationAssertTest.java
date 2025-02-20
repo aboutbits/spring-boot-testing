@@ -617,50 +617,51 @@ class ValidationAssertTest {
                     ).isEnabled()
             );
         }
-
-        @Test
-        void shouldAlsoWorkForExtendedClassesEvenWithoutAllArgsConstructors() {
-            var item = new SomeExtendingClass();
-            item.notNull = "notNull";
-            item.notNullPositiveOrZero = ScaledBigDecimal.ONE;
-
-            assertThatValidation().of(item)
-                    .usingBeanValidation()
-                    .notNull("notNull")
-                    .notNull("notNull")
-                    .positiveOrZero("notNullPositiveOrZero")
-                    .isCompliant();
-
-            var invalidItem = new SomeExtendingClass();
-
-            assertThatExceptionOfType(AssertionError.class).isThrownBy(
-                    () -> assertThatValidation().of(invalidItem)
-                            .usingBeanValidation()
-                            .notNull("notNull")
-                            .notNull("notNull")
-                            .positiveOrZero("notNullPositiveOrZero")
-                            .isCompliant()
-            );
-        }
-
-        @Test
-        void usingRuleRegistrarShouldWork() {
-            var item = new SomeExtendingClass();
-            item.notNull = "notNull";
-            item.notNullPositiveOrZero = ScaledBigDecimal.ONE;
-
-            Consumer<TestValidationAssert.TestRuleBuilder> registrar = (ruleBuilder -> ruleBuilder
-                    .notNull("notNull")
-                    .notNull("notNull")
-                    .positiveOrZero("notNullPositiveOrZero")
-            );
-
-            assertThatValidation().of(item)
-                    .usingBeanValidation()
-                    .withAdditionalRules(registrar)
-                    .isCompliant();
-        }
     }
+
+    @Test
+    void shouldAlsoWorkForExtendedClassesEvenWithoutAllArgsConstructors() {
+        var item = new SomeExtendingClass();
+        item.notNull = "notNull";
+        item.notNullPositiveOrZero = ScaledBigDecimal.ONE;
+
+        assertThatValidation().of(item)
+                .usingBeanValidation()
+                .notNull("notNull")
+                .notNull("notNull")
+                .positiveOrZero("notNullPositiveOrZero")
+                .isCompliant();
+
+        var invalidItem = new SomeExtendingClass();
+
+        assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                () -> assertThatValidation().of(invalidItem)
+                        .usingBeanValidation()
+                        .notNull("notNull")
+                        .notNull("notNull")
+                        .positiveOrZero("notNullPositiveOrZero")
+                        .isCompliant()
+        );
+    }
+
+    @Test
+    void usingRuleRegistrarShouldWork() {
+        var item = new SomeExtendingClass();
+        item.notNull = "notNull";
+        item.notNullPositiveOrZero = ScaledBigDecimal.ONE;
+
+        Consumer<TestValidationAssert.TestRuleBuilder> registrar = (ruleBuilder -> ruleBuilder
+                .notNull("notNull")
+                .notNull("notNull")
+                .positiveOrZero("notNullPositiveOrZero")
+        );
+
+        assertThatValidation().of(item)
+                .usingBeanValidation()
+                .withAdditionalRules(registrar)
+                .isCompliant();
+    }
+
 
     private static SomeValidParameter getSomeValidParameter() {
         return new SomeValidParameter(
