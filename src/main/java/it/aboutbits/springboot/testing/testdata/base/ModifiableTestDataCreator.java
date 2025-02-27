@@ -12,7 +12,7 @@ import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unchecked")
 @Slf4j
-public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDataCreator<CREATOR, ITEM, PARAMETER>, ITEM, PARAMETER> extends TestDataCreator<ITEM> {
+public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDataCreator<CREATOR, ITEM, PARAMETER>, ITEM, PARAMETER> extends TestDataCreator<ITEM> {
     protected static final FakerExtended FAKER = new FakerExtended();
 
     private boolean mutatorSet = false;
@@ -25,7 +25,7 @@ public abstract class ModifyableTestDataCreator<CREATOR extends ModifyableTestDa
     protected ObjIntConsumer<ITEM> resultMutator = (item, index) -> {
     };
 
-    protected ModifyableTestDataCreator(int count) {
+    protected ModifiableTestDataCreator(int count) {
         super(count);
     }
 
