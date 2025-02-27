@@ -117,9 +117,19 @@ final class RuleValidator<P> {
                     var violations = validator.validate(copy);
 
                     // Check if there are any violations
+                    var violatingFieldMessages = violations
+                            .stream()
+                            .map(violation ->
+                                         "%s => %s".formatted(
+                                                 violation.getPropertyPath().toString(),
+                                                 violation.getMessage()
+                                         )
+                            );
+
                     assertThat(violations)
                             .withFailMessage(
-                                    "More than one property failed to validate during mutation. The supplied parameter possibly contains invalid values."
+                                    "More than one property failed to validate during mutation. The supplied parameter possibly contains invalid values: %s",
+                                    violatingFieldMessages.collect(Collectors.joining(" | "))
                             )
                             .hasSizeLessThan(2);
 
