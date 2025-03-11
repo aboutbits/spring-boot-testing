@@ -1,6 +1,7 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
 import it.aboutbits.springboot.toolbox.type.identity.EntityId;
+import lombok.NonNull;
 import net.datafaker.Faker;
 import net.datafaker.service.FakeValuesService;
 import net.datafaker.service.FakerContext;
@@ -36,7 +37,7 @@ public class FakerExtended extends Faker {
         super(fakeValuesService, context);
     }
 
-    public <T extends Enum<?>> T randomEnumValue(Class<T> enumClass) {
+    public <T extends Enum<?>> T randomEnumValue(@NonNull Class<T> enumClass) {
         var values = enumClass.getEnumConstants();
         if (values.length == 0) {
             throw new IllegalArgumentException("Enum class must have at least one value");
@@ -44,15 +45,19 @@ public class FakerExtended extends Faker {
         return values[this.random().nextInt(values.length)];
     }
 
-    public <T extends EntityId<Long>> T randomEntityId(LongFunction<T> constructor) {
+    public <T extends EntityId<Long>> T randomEntityId(@NonNull LongFunction<T> constructor) {
         return constructor.apply(
-                super.random().nextInt(99999)
+                super.random().nextInt(9999999)
         );
     }
 
-    public <T extends EntityId<String>> T randomEntityId(Function<String, T> constructor) {
+    public <T extends EntityId<String>> T randomEntityId(@NonNull Function<String, T> constructor) {
         return constructor.apply(
                 super.internet().uuid()
         );
+    }
+
+    public String unique(@NonNull String value) {
+        return value + "_" + super.random().nextInt(9999999);
     }
 }
