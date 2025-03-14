@@ -133,6 +133,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
                         parameterUnderTest,
                         functionToCallWithParameter,
                         ruleBuilder.getRules(),
+                        ruleBuilder.getValidationFunctions(),
                         NON_BEAN_TYPES
                 )
         );

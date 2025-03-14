@@ -46,12 +46,20 @@ public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<R>> implements
     @Getter(AccessLevel.PACKAGE)
     private final List<Rule> rules = new ArrayList<>();
 
+    @Getter(AccessLevel.PACKAGE)
+    private final List<CustomValidationFunction> validationFunctions = new ArrayList<>();
+
     @Setter(AccessLevel.PACKAGE)
     private Runnable triggerValidation;
 
     @Override
     public void addRule(@NonNull Rule rule) {
         rules.add(rule);
+    }
+
+    @Override
+    public void addValidationFunction(@NonNull CustomValidationFunction function) {
+        validationFunctions.add(function);
     }
 
     public <T extends BaseRuleBuilder<T>> T withAdditionalRules(Consumer<T> registrar) {

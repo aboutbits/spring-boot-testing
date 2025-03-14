@@ -50,6 +50,8 @@ final class RuleValidator<P> {
             @NonNull
             List<Rule> rules,
             @NonNull
+            List<CustomValidationFunction> functions,
+            @NonNull
             Set<Class<?>> nonBeanTypes
     ) {
     }
@@ -59,11 +61,22 @@ final class RuleValidator<P> {
         @SuppressWarnings("unchecked")
         var functionToCallWithParameter = (Consumer<P>) assertionParameter.functionToCallWithParameter();
         var rules = assertionParameter.rules();
+        var functions = assertionParameter.functions();
         var nonBeanTypes = assertionParameter.nonBeanTypes();
 
-        assertThat(rules)
+        var rulesAndFunctions = rules.size() + functions.size();
+
+        assertThat(rulesAndFunctions)
                 .withFailMessage("Validation failed: no rules were defined.")
-                .isNotEmpty();
+                .isNotZero();
+
+        for (var function : functions) {
+            var result = function.apply(parameterUnderTest);
+            assertThat(result.valid())
+                    .withFailMessage(
+                            "Validation failed: %s", result.message())
+                    .isTrue();
+        }
 
         var validator = VALIDATOR_FACTORY.getValidator();
 
@@ -126,14 +139,18 @@ final class RuleValidator<P> {
                                          )
                             );
 
-                    assertThat(violations)
+                    var violatingProperties = violations.stream().map(
+                            f -> f.getPropertyPath().toString()
+                    ).collect(Collectors.toSet());
+
+                    assertThat(violatingProperties)
                             .withFailMessage(
                                     "More than one property failed to validate during mutation. The supplied parameter possibly contains invalid values: %s",
                                     violatingFieldMessages.collect(Collectors.joining(" | "))
                             )
                             .hasSizeLessThan(2);
 
-                    assertThat(violations)
+                    assertThat(violatingProperties)
                             .withFailMessage("Validation failed for property: " + rule.getProperty() + " [" + alteredValue + "]")
                             .hasSize(1);
                 }
