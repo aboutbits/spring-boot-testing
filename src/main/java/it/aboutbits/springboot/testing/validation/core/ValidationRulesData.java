@@ -4,4 +4,6 @@ import lombok.NonNull;
 
 public interface ValidationRulesData {
     void addRule(@NonNull Rule rule);
+
+    void addValidationFunction(@NonNull CustomValidationFunction function);
 }
