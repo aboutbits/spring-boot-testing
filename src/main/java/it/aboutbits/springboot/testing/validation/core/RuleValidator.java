@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import jakarta.validation.groups.Default;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.springframework.lang.Nullable;
@@ -127,7 +128,7 @@ final class RuleValidator<P> {
                 } else {
 
                     // Use Bean Validation to validate the copy
-                    var violations = validator.validate(copy);
+                    var violations = validator.validate(copy, Default.class);
 
                     // Check if there are any violations
                     var violatingFieldMessages = violations
