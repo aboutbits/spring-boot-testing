@@ -1,11 +1,11 @@
 package it.aboutbits.springboot.testing.validation.core;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import jakarta.validation.groups.Default;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.springframework.lang.Nullable;
@@ -83,6 +83,12 @@ final class RuleValidator<P> {
 
         var propertiesWithRules = getPropertyNamesThatHaveRules(rules);
 
+        assertThatSuppliedParameterIsValid(
+                parameterUnderTest,
+                functionToCallWithParameter,
+                validator
+        );
+
         assertThatValidationIsCompliantForEachProperty(
                 rules,
                 parameterUnderTest,
@@ -108,6 +114,52 @@ final class RuleValidator<P> {
         return propertiesWithRules;
     }
 
+    private static <P> void assertThatSuppliedParameterIsValid(
+            P parameterUnderTest,
+            Consumer<P> functionToCallWithParameter,
+            Validator validator
+    ) {
+        if (functionToCallWithParameter != null) {
+            try {
+                functionToCallWithParameter.accept(parameterUnderTest);
+            } catch (ConstraintViolationException e) {
+                var violatingFieldMessages = getViolatingFieldMessages(e.getConstraintViolations());
+
+                assertThat(true)
+                        .withFailMessage(
+                                "The supplied parameter violates the validation rules. The supplied parameter is not valid: %s",
+                                violatingFieldMessages.collect(Collectors.joining(" | "))
+                        )
+                        .isFalse();
+            } catch (Exception ignored) {
+                // ignore any other exceptions
+            }
+        } else {
+            // Use Bean Validation to validate
+            var violations = new HashSet<ConstraintViolation<?>>(validator.validate(parameterUnderTest));
+
+            var violatingFieldMessages = getViolatingFieldMessages(violations);
+
+            assertThat(violations)
+                    .withFailMessage(
+                            "The supplied parameter possibly contains invalid values: %s",
+                            violatingFieldMessages.collect(Collectors.joining(" | "))
+                    )
+                    .isEmpty();
+        }
+    }
+
+    private static Stream<String> getViolatingFieldMessages(Set<ConstraintViolation<?>> violations) {
+        return violations
+                .stream()
+                .map(violation ->
+                             "%s => %s".formatted(
+                                     violation.getPropertyPath().toString(),
+                                     violation.getMessage()
+                             )
+                );
+    }
+
     private static <P> void assertThatValidationIsCompliantForEachProperty(
             List<Rule> rules,
             P parameterUnderTest,
@@ -128,32 +180,15 @@ final class RuleValidator<P> {
                 } else {
 
                     // Use Bean Validation to validate the copy
-                    var violations = validator.validate(copy, Default.class);
-
-                    // Check if there are any violations
-                    var violatingFieldMessages = violations
-                            .stream()
-                            .map(violation ->
-                                         "%s => %s".formatted(
-                                                 violation.getPropertyPath().toString(),
-                                                 violation.getMessage()
-                                         )
-                            );
+                    var violations = validator.validate(copy);
 
                     var violatingProperties = violations.stream().map(
                             f -> f.getPropertyPath().toString()
                     ).collect(Collectors.toSet());
 
                     assertThat(violatingProperties)
-                            .withFailMessage(
-                                    "More than one property failed to validate during mutation. The supplied parameter possibly contains invalid values: %s",
-                                    violatingFieldMessages.collect(Collectors.joining(" | "))
-                            )
-                            .hasSizeLessThan(2);
-
-                    assertThat(violatingProperties)
                             .withFailMessage("Validation failed for property: " + rule.getProperty() + " [" + alteredValue + "]")
-                            .hasSize(1);
+                            .contains(rule.getProperty());
                 }
             });
         }
