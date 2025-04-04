@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
+import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import it.aboutbits.springboot.toolbox.type.identity.EntityId;
 import lombok.NonNull;
 import net.datafaker.Faker;
@@ -59,5 +60,53 @@ public class FakerExtended extends Faker {
 
     public String unique(@NonNull String value) {
         return value + "_" + super.random().nextInt(9999999);
+    }
+
+    public RandomNumericRange numericRange() {
+        return new RandomNumericRange(
+                super.getFaker()
+        );
+    }
+
+    public static final class RandomNumericRange {
+        private final Faker parent;
+
+        private RandomNumericRange(Faker parent) {
+            this.parent = parent;
+        }
+
+        public NumericRange random() {
+            return random(-999999999, 999999999);
+        }
+
+        public NumericRange positive() {
+            return random(1, 999999999);
+        }
+
+        public NumericRange positiveOrZero() {
+            return random(0, 999999999);
+        }
+
+        public NumericRange negative() {
+            return random(-999999999, -1);
+        }
+
+        public NumericRange negativeOrZero() {
+            return random(-999999999, 0);
+        }
+
+        public NumericRange random(double min, double max) {
+            var lower = parent.random().nextDouble(min, max - 1);
+            var upper = parent.random().nextDouble(lower, max);
+
+            return new NumericRange(
+                    ScaledBigDecimal.valueOf(lower),
+                    ScaledBigDecimal.valueOf(upper)
+            );
+        }
+
+        public record NumericRange(ScaledBigDecimal lower, ScaledBigDecimal upper) {
+
+        }
     }
 }
