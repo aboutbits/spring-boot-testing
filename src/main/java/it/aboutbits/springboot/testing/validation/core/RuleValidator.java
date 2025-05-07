@@ -12,6 +12,7 @@ import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -367,6 +368,10 @@ final class RuleValidator<P> {
 
         var properties = new HashSet<String>();
         for (var field : clazz.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
             properties.add(field.getName());
         }
 
@@ -410,7 +415,11 @@ final class RuleValidator<P> {
 
         var fields = new ArrayList<Field>();
         while (clazz != null) {
-            fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+            var newFields = Arrays.stream(clazz.getDeclaredFields())
+                    .filter(field -> !Modifier.isStatic(field.getModifiers()))
+                    .toList();
+
+            fields.addAll(newFields);
             clazz = clazz.getSuperclass();
         }
         return fields.toArray(new Field[0]);
