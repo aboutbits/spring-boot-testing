@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.With;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,10 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static it.aboutbits.springboot.testing.validation.ValidationAssertTest.TestValidationAssert.assertThatValidation;
@@ -148,6 +153,21 @@ class ValidationAssertTest {
 
             // Valid
             @Valid Object validObject,
+
+            // Size - Min
+            @Size(min = 3) String minSizeString,
+            @Size(min = 3) Set<UUID> minSizeCollection,
+            @Size(min = 3) UUID[] minSizeArray,
+
+            // Size - Max
+            @Size(max = 10) String maxSizeString,
+            @Size(max = 10) Collection<String> maxSizeCollection,
+            @Size(max = 10) String[] maxSizeArray,
+
+            // Size - Min/Max
+            @Size(min = 2, max = 8) String minMaxSizeString,
+            @Size(min = 2, max = 8) Collection<String> minMaxSizeCollection,
+            @Size(min = 2, max = 8) String[] minMaxSizeArray,
 
             // Nullable
             @Nullable Object nullable,
@@ -272,6 +292,21 @@ class ValidationAssertTest {
 
                 // Valid
                 .validBean("validObject")
+
+                // Size - Min
+                .size("minSizeString").min(3)
+                .size("minSizeCollection").min(3)
+                .size("minSizeArray").min(3)
+
+                // Size - Max
+                .size("maxSizeString").max(10)
+                .size("maxSizeCollection").max(10)
+                .size("maxSizeArray").max(10)
+
+                // Size - Min/Max
+                .size("minMaxSizeString").minMax(2, 8)
+                .size("minMaxSizeCollection").minMax(2, 8)
+                .size("minMaxSizeArray").minMax(2, 8)
 
                 // Nullable
                 .nullable("nullable")
@@ -398,6 +433,21 @@ class ValidationAssertTest {
                         // Valid
                         .validBean("validObject")
 
+                        // Size - Min
+                        .size("minSizeString").min(3)
+                        .size("minSizeCollection").min(3)
+                        .size("minSizeArray").min(3)
+
+                        // Size - Max
+                        .size("maxSizeString").max(10)
+                        .size("maxSizeCollection").max(10)
+                        .size("maxSizeArray").max(10)
+
+                        // Size - Min/Max
+                        .size("minMaxSizeString").minMax(2, 8)
+                        .size("minMaxSizeCollection").minMax(2, 8)
+                        .size("minMaxSizeArray").minMax(2, 8)
+
                         // Nullable
                         .nullable("nullable")
 
@@ -517,8 +567,24 @@ class ValidationAssertTest {
                         .past("pastYear")
                         .past("pastYearMonth")
                         .past("pastZonedDateTime")
+
                         // Valid
                         .validBean("validObject")
+
+                        // Size - Min
+                        .size("minSizeString").min(3)
+                        .size("minSizeCollection").min(3)
+                        .size("minSizeArray").min(3)
+
+                        // Size - Max
+                        .size("maxSizeString").max(10)
+                        .size("maxSizeCollection").max(10)
+                        .size("maxSizeArray").max(10)
+
+                        // Size - Min/Max
+                        .size("minMaxSizeString").minMax(2, 8)
+                        .size("minMaxSizeCollection").minMax(2, 8)
+                        .size("minMaxSizeArray").minMax(2, 8)
 
                         // Nullable
                         .nullable("nullable")
@@ -771,6 +837,31 @@ class ValidationAssertTest {
 
                 // Valid
                 null,
+
+                // Size - Min
+                "validstring", // 11 characters, > 3 min
+                Set.of(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        UUID.randomUUID()
+                ), // 4 elements, > 3 min
+                new UUID[]{
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        UUID.randomUUID()
+                }, // 4 elements, > 3 min
+
+                // Size - Max
+                "small", // 5 characters, < 10 max
+                List.of("a", "b", "c"), // 3 elements, < 10 max
+                new String[]{"a", "b", "c"}, // 3 elements, < 10 max
+
+                // Size - Min/Max
+                "medium", // 6 characters, between 2-8
+                List.of("a", "b", "c", "d", "e"), // 5 elements, between 2-8
+                new String[]{"a", "b", "c", "d", "e"}, // 5 elements, between 2-8
 
                 // Nullable
                 null,
