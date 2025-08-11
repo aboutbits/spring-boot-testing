@@ -3,6 +3,7 @@ package it.aboutbits.springboot.testing.validation.source;
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
 import lombok.NonNull;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,12 +50,27 @@ public class SizeLessThanValueSource implements ValueSource {
             throw new IllegalArgumentException("Value must be positive or zero. A size cannot be less than empty.");
         }
 
+        if (propertyClass.isArray()) {
+            return (Stream<T>) arrayFunction(propertyClass, value);
+        }
+
         var sourceFunction = TYPE_SOURCES.get(propertyClass);
         if (sourceFunction != null) {
             return (Stream<T>) sourceFunction.apply(value);
         }
 
         throw new IllegalArgumentException("Property class not supported!");
+    }
+
+    private static Stream<?> arrayFunction(Class<?> arrayClass, long value) {
+        return Stream.concat(
+                Stream.of(generateArray(0, arrayClass)),
+                Stream.iterate(1L, i -> i < value, i -> i + 1)
+                        .map(size -> generateArray(
+                                Math.toIntExact(size),
+                                arrayClass
+                        ))
+        );
     }
 
     @NonNull
@@ -126,5 +142,10 @@ public class SizeLessThanValueSource implements ValueSource {
             collection.add("dummy_" + i); // Add dummy elements, content doesn't matter
         }
         return collection;
+    }
+
+    private static Object generateArray(int size, Class<?> arrayClass) {
+        var componentType = arrayClass.getComponentType();
+        return Array.newInstance(componentType, size);
     }
 }

@@ -3,6 +3,7 @@ package it.aboutbits.springboot.testing.validation.source;
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
 import lombok.NonNull;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,12 +42,27 @@ public class SizeGreaterThanValueSource implements ValueSource {
     public <T> Stream<T> values(Class<T> propertyClass, Object... args) {
         var value = (Long.valueOf((long) args[0]));
 
+        if (propertyClass.isArray()) {
+            return (Stream<T>) arrayFunction(propertyClass, value);
+        }
+
         var sourceFunction = TYPE_SOURCES.get(propertyClass);
         if (sourceFunction != null) {
             return (Stream<T>) sourceFunction.apply(value);
         }
 
         throw new IllegalArgumentException("Property class not supported!");
+    }
+
+    private static Stream<?> arrayFunction(Class<?> arrayClass, long value) {
+
+        return getTestSizes(value)
+                .stream()
+                .map(size -> generateArray(
+                        Math.toIntExact(size),
+                        arrayClass
+                ));
+
     }
 
     @NonNull
@@ -120,4 +136,8 @@ public class SizeGreaterThanValueSource implements ValueSource {
         return collection;
     }
 
+    private static Object generateArray(int size, Class<?> arrayClass) {
+        var componentType = arrayClass.getComponentType();
+        return Array.newInstance(componentType, size);
+    }
 }
