@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
@@ -23,6 +24,7 @@ public class SizeLessThanValueSource implements ValueSource {
 
     static {
         TYPE_SOURCES.put(String.class, SizeLessThanValueSource::getStringStream);
+        TYPE_SOURCES.put(CharSequence.class, SizeLessThanValueSource::getStringStream);
         TYPE_SOURCES.put(Collection.class, SizeLessThanValueSource::getArrayListStream);
         TYPE_SOURCES.put(List.class, SizeLessThanValueSource::getArrayListStream);
         TYPE_SOURCES.put(ArrayList.class, SizeLessThanValueSource::getArrayListStream);
@@ -30,6 +32,9 @@ public class SizeLessThanValueSource implements ValueSource {
         TYPE_SOURCES.put(Set.class, SizeLessThanValueSource::getHashSetStream);
         TYPE_SOURCES.put(HashSet.class, SizeLessThanValueSource::getHashSetStream);
         TYPE_SOURCES.put(TreeSet.class, SizeLessThanValueSource::getTreeSetStream);
+        TYPE_SOURCES.put(Map.class, SizeLessThanValueSource::getHashMapStream);
+        TYPE_SOURCES.put(HashMap.class, SizeLessThanValueSource::getHashMapStream);
+        TYPE_SOURCES.put(TreeMap.class, SizeLessThanValueSource::getTreeMapStream);
     }
 
     @SuppressWarnings("unused")
@@ -130,6 +135,30 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
+    @NonNull
+    private static Stream<Map<?, ?>> getHashMapStream(long value) {
+        return Stream.concat(
+                Stream.of(new HashMap<>()),
+                Stream.iterate(1L, i -> i < value, i -> i + 1)
+                        .map(size -> generateMap(
+                                Math.toIntExact(size),
+                                new HashMap<>()
+                        ))
+        );
+    }
+
+    @NonNull
+    private static Stream<Map<?, ?>> getTreeMapStream(long value) {
+        return Stream.concat(
+                Stream.of(new TreeMap<>()),
+                Stream.iterate(1L, i -> i < value, i -> i + 1)
+                        .map(size -> generateMap(
+                                Math.toIntExact(size),
+                                new TreeMap<>()
+                        ))
+        );
+    }
+
     private static String generateRandomString(int length) {
         // Include printable ASCII characters (32-126) which includes space and common characters
         return RANDOM.ints(length, 32, 127)
@@ -142,6 +171,13 @@ public class SizeLessThanValueSource implements ValueSource {
             collection.add("dummy_" + i); // Add dummy elements, content doesn't matter
         }
         return collection;
+    }
+
+    private static Map<Object, Object> generateMap(int size, Map<Object, Object> map) {
+        for (int i = 0; i < size; i++) {
+            map.put(i, "dummy_" + i); // Add dummy elements, content doesn't matter
+        }
+        return map;
     }
 
     private static Object generateArray(int size, Class<?> arrayClass) {
