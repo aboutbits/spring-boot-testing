@@ -740,6 +740,7 @@ class ValidationAssertTest {
     }
 
 
+    @SuppressWarnings("checkstyle:MethodLength")
     private static SomeValidParameter getSomeValidParameter() {
         return new SomeValidParameter(
                 // NotNull
