@@ -8,12 +8,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
 
@@ -23,13 +28,21 @@ public class SizeGreaterThanValueSource implements ValueSource {
 
     static {
         TYPE_SOURCES.put(String.class, SizeGreaterThanValueSource::getStringStream);
+        TYPE_SOURCES.put(CharSequence.class, SizeGreaterThanValueSource::getStringStream);
         TYPE_SOURCES.put(Collection.class, SizeGreaterThanValueSource::getArrayListStream);
         TYPE_SOURCES.put(List.class, SizeGreaterThanValueSource::getArrayListStream);
         TYPE_SOURCES.put(ArrayList.class, SizeGreaterThanValueSource::getArrayListStream);
         TYPE_SOURCES.put(LinkedList.class, SizeGreaterThanValueSource::getLinkedListStream);
         TYPE_SOURCES.put(Set.class, SizeGreaterThanValueSource::getHashSetStream);
         TYPE_SOURCES.put(HashSet.class, SizeGreaterThanValueSource::getHashSetStream);
+        TYPE_SOURCES.put(LinkedHashSet.class, SizeGreaterThanValueSource::getLinkedHashSetStream);
         TYPE_SOURCES.put(TreeSet.class, SizeGreaterThanValueSource::getTreeSetStream);
+        TYPE_SOURCES.put(Map.class, SizeGreaterThanValueSource::getHashMapStream);
+        TYPE_SOURCES.put(HashMap.class, SizeGreaterThanValueSource::getHashMapStream);
+        TYPE_SOURCES.put(LinkedHashMap.class, SizeGreaterThanValueSource::getLinkedHashMapStream);
+        TYPE_SOURCES.put(TreeMap.class, SizeGreaterThanValueSource::getTreeMapStream);
+        TYPE_SOURCES.put(ConcurrentMap.class, SizeGreaterThanValueSource::getConcurrentHashMapStream);
+        TYPE_SOURCES.put(ConcurrentHashMap.class, SizeGreaterThanValueSource::getConcurrentHashMapStream);
     }
 
     @SuppressWarnings("unused")
@@ -83,6 +96,16 @@ public class SizeGreaterThanValueSource implements ValueSource {
     }
 
     @NonNull
+    private static Stream<Collection<?>> getLinkedHashSetStream(long value) {
+        return getTestSizes(value)
+                .stream()
+                .map(size -> generateCollection(
+                        Math.toIntExact(size),
+                        new LinkedHashSet<>()
+                ));
+    }
+
+    @NonNull
     private static Stream<Collection<?>> getTreeSetStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -112,6 +135,46 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
+    @NonNull
+    private static Stream<Map<?, ?>> getHashMapStream(long value) {
+        return getTestSizes(value)
+                .stream()
+                .map(size -> generateMap(
+                        Math.toIntExact(size),
+                        new HashMap<>()
+                ));
+    }
+
+    @NonNull
+    private static Stream<Map<?, ?>> getLinkedHashMapStream(long value) {
+        return getTestSizes(value)
+                .stream()
+                .map(size -> generateMap(
+                        Math.toIntExact(size),
+                        new LinkedHashMap<>()
+                ));
+    }
+
+    @NonNull
+    private static Stream<Map<?, ?>> getTreeMapStream(long value) {
+        return getTestSizes(value)
+                .stream()
+                .map(size -> generateMap(
+                        Math.toIntExact(size),
+                        new TreeMap<>()
+                ));
+    }
+
+    @NonNull
+    private static Stream<Map<?, ?>> getConcurrentHashMapStream(long value) {
+        return getTestSizes(value)
+                .stream()
+                .map(size -> generateMap(
+                        Math.toIntExact(size),
+                        new ConcurrentHashMap<>()
+                ));
+    }
+
     private static List<Long> getTestSizes(long value) {
         var sizes = new ArrayList<Long>();
 
@@ -134,6 +197,13 @@ public class SizeGreaterThanValueSource implements ValueSource {
             collection.add("dummy_" + i); // Add dummy elements, content doesn't matter
         }
         return collection;
+    }
+
+    private static Map<Object, Object> generateMap(int size, Map<Object, Object> map) {
+        for (int i = 0; i < size; i++) {
+            map.put(i, "dummy_" + i); // Add dummy elements, content doesn't matter
+        }
+        return map;
     }
 
     private static Object generateArray(int size, Class<?> arrayClass) {

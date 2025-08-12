@@ -34,8 +34,11 @@ import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -158,16 +161,19 @@ class ValidationAssertTest {
             @Size(min = 3) String minSizeString,
             @Size(min = 3) Set<UUID> minSizeCollection,
             @Size(min = 3) UUID[] minSizeArray,
+            @Size(min = 3) Map<String, String> minSizeMap,
 
             // Size - Max
-            @Size(max = 10) String maxSizeString,
+            @Size(max = 10) CharSequence maxSizeString,
             @Size(max = 10) Collection<String> maxSizeCollection,
             @Size(max = 10) String[] maxSizeArray,
+            @Size(max = 10) HashMap<String, String> maxSizeMap,
 
             // Size - Min/Max
             @Size(min = 2, max = 8) String minMaxSizeString,
             @Size(min = 2, max = 8) Collection<String> minMaxSizeCollection,
             @Size(min = 2, max = 8) String[] minMaxSizeArray,
+            @Size(min = 2, max = 8) TreeMap<String, UUID> minMaxSizeMap,
 
             // Nullable
             @Nullable Object nullable,
@@ -297,16 +303,19 @@ class ValidationAssertTest {
                 .size("minSizeString").min(3)
                 .size("minSizeCollection").min(3)
                 .size("minSizeArray").min(3)
+                .size("minSizeMap").min(3)
 
                 // Size - Max
                 .size("maxSizeString").max(10)
                 .size("maxSizeCollection").max(10)
                 .size("maxSizeArray").max(10)
+                .size("maxSizeMap").max(10)
 
                 // Size - Min/Max
                 .size("minMaxSizeString").minMax(2, 8)
                 .size("minMaxSizeCollection").minMax(2, 8)
                 .size("minMaxSizeArray").minMax(2, 8)
+                .size("minMaxSizeMap").minMax(2, 8)
 
                 // Nullable
                 .nullable("nullable")
@@ -575,16 +584,19 @@ class ValidationAssertTest {
                         .size("minSizeString").min(3)
                         .size("minSizeCollection").min(3)
                         .size("minSizeArray").min(3)
+                        .size("minSizeMap").min(3)
 
                         // Size - Max
                         .size("maxSizeString").max(10)
                         .size("maxSizeCollection").max(10)
                         .size("maxSizeArray").max(10)
+                        .size("maxSizeMap").max(10)
 
                         // Size - Min/Max
                         .size("minMaxSizeString").minMax(2, 8)
                         .size("minMaxSizeCollection").minMax(2, 8)
                         .size("minMaxSizeArray").minMax(2, 8)
+                        .size("minMaxSizeMap").minMax(2, 8)
 
                         // Nullable
                         .nullable("nullable")
@@ -728,6 +740,7 @@ class ValidationAssertTest {
     }
 
 
+    @SuppressWarnings("checkstyle:MethodLength")
     private static SomeValidParameter getSomeValidParameter() {
         return new SomeValidParameter(
                 // NotNull
@@ -852,16 +865,38 @@ class ValidationAssertTest {
                         UUID.randomUUID(),
                         UUID.randomUUID()
                 }, // 4 elements, > 3 min
+                Map.of(
+                        "ka", "a",
+                        "kb", "b",
+                        "kc", "c",
+                        "kd", "d"
+                ),
 
                 // Size - Max
                 "small", // 5 characters, < 10 max
                 List.of("a", "b", "c"), // 3 elements, < 10 max
                 new String[]{"a", "b", "c"}, // 3 elements, < 10 max
+                new HashMap<>(
+                        Map.of(
+                                "ka", "a",
+                                "kb", "b",
+                                "kc", "c",
+                                "kd", "d"
+                        )
+                ),
 
                 // Size - Min/Max
                 "medium", // 6 characters, between 2-8
                 List.of("a", "b", "c", "d", "e"), // 5 elements, between 2-8
                 new String[]{"a", "b", "c", "d", "e"}, // 5 elements, between 2-8
+                new TreeMap<>(
+                        Map.of(
+                                "ka", UUID.randomUUID(),
+                                "kb", UUID.randomUUID(),
+                                "kc", UUID.randomUUID(),
+                                "kd", UUID.randomUUID()
+                        )
+                ),
 
                 // Nullable
                 null,
