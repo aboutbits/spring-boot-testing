@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
 
@@ -31,10 +35,14 @@ public class SizeLessThanValueSource implements ValueSource {
         TYPE_SOURCES.put(LinkedList.class, SizeLessThanValueSource::getLinkedListStream);
         TYPE_SOURCES.put(Set.class, SizeLessThanValueSource::getHashSetStream);
         TYPE_SOURCES.put(HashSet.class, SizeLessThanValueSource::getHashSetStream);
+        TYPE_SOURCES.put(LinkedHashSet.class, SizeLessThanValueSource::getLinkedHashSetStream);
         TYPE_SOURCES.put(TreeSet.class, SizeLessThanValueSource::getTreeSetStream);
         TYPE_SOURCES.put(Map.class, SizeLessThanValueSource::getHashMapStream);
         TYPE_SOURCES.put(HashMap.class, SizeLessThanValueSource::getHashMapStream);
+        TYPE_SOURCES.put(LinkedHashMap.class, SizeLessThanValueSource::getLinkedHashMapStream);
         TYPE_SOURCES.put(TreeMap.class, SizeLessThanValueSource::getTreeMapStream);
+        TYPE_SOURCES.put(ConcurrentMap.class, SizeLessThanValueSource::getConcurrentHashMapStream);
+        TYPE_SOURCES.put(ConcurrentHashMap.class, SizeLessThanValueSource::getConcurrentHashMapStream);
     }
 
     @SuppressWarnings("unused")
@@ -124,6 +132,18 @@ public class SizeLessThanValueSource implements ValueSource {
     }
 
     @NonNull
+    private static Stream<Collection<?>> getLinkedHashSetStream(long value) {
+        return Stream.concat(
+                Stream.of(new LinkedHashSet<>()),
+                Stream.iterate(1L, i -> i < value, i -> i + 1)
+                        .map(size -> generateCollection(
+                                Math.toIntExact(size),
+                                new LinkedHashSet<>()
+                        ))
+        );
+    }
+
+    @NonNull
     private static Stream<Collection<?>> getTreeSetStream(long value) {
         return Stream.concat(
                 Stream.of(new TreeSet<>()),
@@ -148,6 +168,18 @@ public class SizeLessThanValueSource implements ValueSource {
     }
 
     @NonNull
+    private static Stream<Map<?, ?>> getLinkedHashMapStream(long value) {
+        return Stream.concat(
+                Stream.of(new LinkedHashMap<>()),
+                Stream.iterate(1L, i -> i < value, i -> i + 1)
+                        .map(size -> generateMap(
+                                Math.toIntExact(size),
+                                new LinkedHashMap<>()
+                        ))
+        );
+    }
+
+    @NonNull
     private static Stream<Map<?, ?>> getTreeMapStream(long value) {
         return Stream.concat(
                 Stream.of(new TreeMap<>()),
@@ -155,6 +187,18 @@ public class SizeLessThanValueSource implements ValueSource {
                         .map(size -> generateMap(
                                 Math.toIntExact(size),
                                 new TreeMap<>()
+                        ))
+        );
+    }
+
+    @NonNull
+    private static Stream<Map<?, ?>> getConcurrentHashMapStream(long value) {
+        return Stream.concat(
+                Stream.of(new ConcurrentHashMap<>()),
+                Stream.iterate(1L, i -> i < value, i -> i + 1)
+                        .map(size -> generateMap(
+                                Math.toIntExact(size),
+                                new ConcurrentHashMap<>()
                         ))
         );
     }
