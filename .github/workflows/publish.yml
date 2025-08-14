@@ -10,7 +10,7 @@ on:
 jobs:
   publish:
     timeout-minutes: 15
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -29,16 +29,21 @@ jobs:
           GITHUB_USER_NAME: ${{ github.actor }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  tag:
+  release:
     timeout-minutes: 5
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: publish
     steps:
       - uses: actions/checkout@v4
 
-      - name: Tag Deployment
-        uses: aboutbits/github-actions-base/git-create-or-update-tag@v1
+      - name: Create GitHub release
+        uses: actions/github-script@v7
         with:
-          tag-name: ${{ github.event.inputs.version }}
-          user-name: 'AboutBits'
-          user-email: 'info@aboutbits.it'
+          script: |
+            github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: '${{ github.event.inputs.version }}',
+              name: 'Release ${{ github.event.inputs.version }}',
+              prerelease: '${{ github.event.inputs.version }}'.includes('RC')
+            })
