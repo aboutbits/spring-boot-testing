@@ -149,7 +149,7 @@ void testValidationWithIdParameter() {
 }
 ```
 
-#### Adding custom validation rules
+#### Adding Custom Validation Rules
 
 You can add new rules by creating a new interface:
 
@@ -177,7 +177,7 @@ public class ValidationAssert extends BaseValidationAssert<BaseRuleBuilder<?>> {
 The `Rule` requires the property name, a value-source and an array of optional parameters. For example `min(property, minValue)` takes in the additional parameter for the value.
 Note that the value-source must return **invalid** values. This is required because the tool is actively trying to violate the rules to check if an error is raised.
 
-#### Adding custom value sources
+#### Adding Custom Value Sources
 
 You can add custom values sources by implementing the `ValueSource` interface.
 While the interface can not enforce the static function `registerType`, it is best practice to implement it in a way that keeps this extensible.
@@ -221,7 +221,7 @@ public class EmptyValueSource implements ValueSource {
 }
 ```
 
-#### Adding support for custom types
+#### Adding Support for Custom Types
 
 _Note: CustomType wrappers from the `toolbox` are currently not natively supported._
 
@@ -257,7 +257,7 @@ public class ValidationAssert extends BaseValidationAssert<BaseRuleBuilder<?>> {
 }
 ```
 
-## Local development:
+## Local Development
 
 To use this library as a local development dependency, you can simply refer to the version `BUILD-SNAPSHOT`.
 
@@ -265,9 +265,9 @@ Check out this repository and run the maven goal `install`. This will build and 
 
 Note that you may have to tell your IDE to reload your main maven project each time you build the library.
 
-## Building and releasing a new version:
+## Build & Publish
 
-To create a new version of this package and push it to the maven registry, you will have to use the GitHub actions workflow and manually trigger it.
+To build and publish the chart, visit the GitHub Actions page of the repository and trigger the workflow "Release Package" manually.
 
 ## Information
 
