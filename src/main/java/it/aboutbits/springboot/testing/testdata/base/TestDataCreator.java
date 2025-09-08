@@ -30,14 +30,33 @@ public abstract class TestDataCreator<ITEM> {
         return create();
     }
 
-    public List<ITEM> returnSorted(@NonNull Comparator<ITEM> comparator) {
-        return returnAll().stream().sorted(comparator).toList();
+    @SafeVarargs
+    public final List<ITEM> returnSorted(@NonNull Comparator<ITEM>... comparators) {
+        if (comparators.length == 0) {
+            throw new IllegalArgumentException("At least one comparator must be provided");
+        }
+
+        var combinedComparator = comparators[0];
+        for (var i = 1; i < comparators.length; i++) {
+            combinedComparator = combinedComparator.thenComparing(comparators[i]);
+        }
+
+        return returnAll().stream().sorted(combinedComparator).toList();
     }
 
-    public <U extends Comparable<? super U>> List<ITEM> returnSorted(@NonNull Function<ITEM, U> comparator) {
-        return returnAll().stream()
-                .sorted(Comparator.comparing(comparator))
-                .toList();
+    @SafeVarargs
+    @SuppressWarnings("unchecked")
+    public final <U extends Comparable<? super U>> List<ITEM> returnSorted(@NonNull Function<ITEM, ? extends Comparable<?>>... comparators) {
+        if (comparators.length == 0) {
+            throw new IllegalArgumentException("At least one comparator must be provided");
+        }
+
+        var combinedComparator = Comparator.comparing((Function<ITEM, U>) comparators[0]);
+        for (var i = 1; i < comparators.length; i++) {
+            combinedComparator = combinedComparator.thenComparing((Function<ITEM, U>) comparators[i]);
+        }
+
+        return returnAll().stream().sorted(combinedComparator).toList();
     }
 
     public Set<ITEM> returnSet() {
