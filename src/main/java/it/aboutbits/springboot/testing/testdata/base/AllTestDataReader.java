@@ -2,32 +2,20 @@ package it.aboutbits.springboot.testing.testdata.base;
 
 import lombok.NonNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-public abstract class TestDataCreator<ITEM> {
-    protected static final FakerExtended FAKER = new FakerExtended();
-
-    protected final int numberOfItems;
-
-    protected TestDataCreator(int numberOfItems) {
-        this.numberOfItems = numberOfItems;
-    }
-
-    public void commit() {
-        create();
-    }
-
+public abstract class AllTestDataReader<ITEM> {
     public ITEM returnFirst() {
-        return create().getFirst();
+        return (ITEM) this.returnAll().getFirst();
     }
 
     public List<ITEM> returnAll() {
-        return create();
+        return this.fetch();
     }
 
     @SafeVarargs
@@ -59,22 +47,22 @@ public abstract class TestDataCreator<ITEM> {
         return returnAll().stream().sorted(combinedComparator).toList();
     }
 
+    public <U extends Comparable<? super U>> AllAndFiltered<ITEM> returnFiltered(@NonNull Predicate<ITEM> predicate) {
+        var all = this.returnAll();
+        return new AllAndFiltered<ITEM>(
+                all,
+                all.stream().filter(predicate).toList(),
+                all.stream().filter(item -> !predicate.test(item)).toList()
+        );
+    }
+
     public Set<ITEM> returnSet() {
-        return new HashSet<>(create());
+        return new HashSet<>(this.returnAll());
     }
 
-    protected List<ITEM> create() {
-        var result = new ArrayList<ITEM>();
+    protected abstract List<ITEM> fetch();
 
-        for (var index = 0; index < numberOfItems; index++) {
-            result.add(
-                    create(index)
-            );
-        }
+    public record AllAndFiltered<T>(@NonNull List<T> all, @NonNull List<T> filtered, @NonNull List<T> other) {
 
-        return result;
     }
-
-    protected abstract ITEM create(int index);
-
 }

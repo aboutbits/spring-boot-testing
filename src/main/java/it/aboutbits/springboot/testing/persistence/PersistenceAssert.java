@@ -9,6 +9,13 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static it.aboutbits.springboot.toolbox.util.CollectUtil.collectToSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public final class PersistenceAssert {
@@ -24,114 +31,223 @@ public final class PersistenceAssert {
             @NonNull E before,
             @NonNull Class<M> modelClass
     ) {
+        return new WriteOperationAsserter<>(getEntityManager(), List.of(before), modelClass);
+    }
+
+    @SuppressWarnings("unused")
+    public static <ID extends EntityId<?>, E extends Identified<ID> & ChangeAware, M extends Identified<ID> & ChangeAware> WriteOperationAsserter<ID, E, M> assertThatEntity(
+            @NonNull Collection<E> before,
+            @NonNull Class<M> modelClass
+    ) {
         return new WriteOperationAsserter<>(getEntityManager(), before, modelClass);
     }
 
+    /**
+     * @deprecated Use {@link #assertThatEntityId(EntityId, Class)} instead.
+     */
+    @Deprecated
     @SuppressWarnings("unused")
     public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntity(
             @NonNull ID id,
             @NonNull Class<M> modelClass
     ) {
+        return new WriteOperationIdAsserter<>(getEntityManager(), List.of(id), modelClass);
+    }
+
+    @SuppressWarnings("unused")
+    public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntityId(
+            @NonNull ID id,
+            @NonNull Class<M> modelClass
+    ) {
+        return new WriteOperationIdAsserter<>(getEntityManager(), List.of(id), modelClass);
+    }
+
+    @SuppressWarnings("unused")
+    public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntityId(
+            @NonNull Collection<ID> id,
+            @NonNull Class<M> modelClass
+    ) {
         return new WriteOperationIdAsserter<>(getEntityManager(), id, modelClass);
+    }
+
+    /**
+     * Batch query entities by their IDs using JPQL
+     */
+    private static <ID extends EntityId<?>, M extends Identified<ID>> List<M> batchFindByIds(
+            EntityManager entityManager,
+            Collection<ID> ids,
+            Class<M> modelClass
+    ) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return ids.stream()
+                .map(
+                        id -> entityManager.find(modelClass, id)
+                )
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /**
+     * Check if entities with given IDs exist in the database using a count query
+     */
+    private static <ID extends EntityId<?>, M extends Identified<ID>> Map<ID, Boolean> batchCheckExistence(
+            EntityManager entityManager,
+            Collection<ID> ids,
+            Class<M> modelClass
+    ) {
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+
+        // Get existing entities
+        var existingEntities = batchFindByIds(entityManager, ids, modelClass);
+        var existingIds = collectToSet(existingEntities, Identified::getId);
+
+        // Map each ID to its existence status
+        return ids.stream()
+                .collect(Collectors.toMap(
+                        id -> id,
+                        existingIds::contains
+                ));
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class WriteOperationAsserter<ID extends EntityId<?>, E extends Identified<ID> & ChangeAware, M extends Identified<ID> & ChangeAware> {
         private final EntityManager entityManager;
-        private final E entity;
+        private final Collection<E> entity;
         private final Class<M> modelClass;
 
         @SuppressWarnings("unused")
         public void hasBeenCreatedInDatabase() {
             entityManager.clear();
-            var savedInstance = getSavedInstance();
 
-            assertThat(
-                    savedInstance.getId()
-            ).isNotNull();
+            var ids = collectToSet(entity, Identified::getId);
+            var savedInstances = batchFindByIds(entityManager, ids, modelClass);
 
-            assertThat(
-                    savedInstance.getCreatedAt()
-            ).isNotNull();
+            for (var savedInstance : savedInstances) {
+                assertThat(
+                        savedInstance.getId()
+                ).isNotNull();
+
+                assertThat(
+                        savedInstance.getCreatedAt()
+                ).isNotNull();
+            }
+
+            // Verify all entities were found
+            assertThat(savedInstances).hasSize(entity.size());
         }
 
         @SuppressWarnings("unused")
         public void hasBeenUpdatedInDatabase() {
             entityManager.clear();
-            var savedInstance = getSavedInstance();
 
-            assertThat(
-                    savedInstance.getUpdatedAt()
-            ).isAfter(
-                    entity.getUpdatedAt()
-            );
+            var ids = collectToSet(entity, Identified::getId);
+            var savedInstances = batchFindByIds(entityManager, ids, modelClass);
+
+            // Create a map for easy lookup of original entities by ID
+            var originalByIdMap = entity.stream()
+                    .collect(Collectors.toMap(Identified::getId, e -> e));
+
+            for (var savedInstance : savedInstances) {
+                var originalEntity = originalByIdMap.get(savedInstance.getId());
+                assertThat(originalEntity).isNotNull();
+
+                assertThat(
+                        savedInstance.getUpdatedAt()
+                ).isAfter(
+                        originalEntity.getUpdatedAt()
+                );
+            }
         }
 
         @SuppressWarnings("unused")
         public void hasNotChangedInDatabase() {
             entityManager.clear();
-            var savedInstance = getSavedInstance();
 
-            assertThat(savedInstance).isNotNull();
+            var ids = collectToSet(entity, Identified::getId);
+            var savedInstances = batchFindByIds(entityManager, ids, modelClass);
 
-            assertThat(
-                    savedInstance.getUpdatedAt()
-            ).isEqualTo(
-                    entity.getUpdatedAt()
-            );
+            // Create a map for easy lookup of original entities by ID
+            var originalByIdMap = entity.stream()
+                    .collect(Collectors.toMap(Identified::getId, e -> e));
+
+            for (var savedInstance : savedInstances) {
+                var originalEntity = originalByIdMap.get(savedInstance.getId());
+
+                assertThat(savedInstance).isNotNull();
+                assertThat(originalEntity).isNotNull();
+
+                assertThat(
+                        savedInstance.getUpdatedAt()
+                ).isEqualTo(
+                        originalEntity.getUpdatedAt()
+                );
+            }
         }
 
         @SuppressWarnings("unused")
         public void isAbsentInDatabase() {
             entityManager.clear();
-            var savedInstance = getSavedInstance();
 
-            assertThat(savedInstance).isNull();
+            var ids = collectToSet(entity, Identified::getId);
+            var existenceMap = batchCheckExistence(entityManager, ids, modelClass);
+
+            for (var id : ids) {
+                assertThat(existenceMap.get(id))
+                        .as("Entity with ID %s should be absent from database", id)
+                        .isFalse();
+            }
         }
 
         @SuppressWarnings("unused")
         public void isPresentInDatabase() {
             entityManager.clear();
-            var savedInstance = getSavedInstance();
 
-            assertThat(savedInstance).isNotNull();
-        }
+            var ids = collectToSet(entity, Identified::getId);
+            var existenceMap = batchCheckExistence(entityManager, ids, modelClass);
 
-        private M getSavedInstance() {
-            return entityManager.find(
-                    modelClass,
-                    entity.getId()
-            );
+            for (var id : ids) {
+                assertThat(existenceMap.get(id))
+                        .as("Entity with ID %s should be present in database", id)
+                        .isTrue();
+            }
         }
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class WriteOperationIdAsserter<ID extends EntityId<?>, M extends Identified<ID>> {
         private final EntityManager entityManager;
-        private final ID id;
+        private final Collection<ID> id;
         private final Class<M> modelClass;
 
         @SuppressWarnings("unused")
         public void isAbsentInDatabase() {
             entityManager.clear();
-            var savedInstance = getSavedInstance();
 
-            assertThat(savedInstance).isNull();
+            var existenceMap = batchCheckExistence(entityManager, id, modelClass);
+
+            for (var entityId : id) {
+                assertThat(existenceMap.get(entityId))
+                        .as("Entity with ID %s should be absent from database", entityId)
+                        .isFalse();
+            }
         }
 
         @SuppressWarnings("unused")
         public void isPresentInDatabase() {
             entityManager.clear();
-            var savedInstance = getSavedInstance();
 
-            assertThat(savedInstance).isNotNull();
-        }
+            var existenceMap = batchCheckExistence(entityManager, id, modelClass);
 
-        private M getSavedInstance() {
-            return entityManager.find(
-                    modelClass,
-                    id
-            );
+            for (var entityId : id) {
+                assertThat(existenceMap.get(entityId))
+                        .as("Entity with ID %s should be present in database", entityId)
+                        .isTrue();
+            }
         }
     }
 }
