@@ -12,7 +12,7 @@
 
     <groupId>it.aboutbits</groupId>
     <artifactId>spring-boot-testing</artifactId>
-    <version>BUILD-SNAPSHOT</version>
+    <version>1.4.0</version>
     <description>Testing library for Spring Boot projects.</description>
 
     <properties>
@@ -24,7 +24,7 @@
             <dependency>
                 <groupId>it.aboutbits</groupId>
                 <artifactId>spring-boot-toolbox</artifactId>
-                <version>BUILD-SNAPSHOT</version>
+                <version>2.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
