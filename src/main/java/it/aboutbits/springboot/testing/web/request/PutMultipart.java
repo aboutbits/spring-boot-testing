@@ -1,16 +1,16 @@
 package it.aboutbits.springboot.testing.web.request;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import tools.jackson.databind.json.JsonMapper;
 
 public class PutMultipart extends MultipartRequest {
     PutMultipart(
             @NonNull MockMvc mockMvc,
-            @NonNull ObjectMapper objectMapper,
+            @NonNull JsonMapper objectMapper,
             @NonNull String url,
             @NonNull Object... pathVariables
     ) {

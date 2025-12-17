@@ -1,11 +1,11 @@
 package it.aboutbits.springboot.testing.web.request;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ public abstract class MultipartRequest extends Request<MockMultipartHttpServletR
 
     MultipartRequest(
             @NonNull MockMvc mockMvc,
-            @NonNull ObjectMapper objectMapper,
+            @NonNull JsonMapper objectMapper,
             @NonNull String url,
             @NonNull Object... pathVariables
     ) {

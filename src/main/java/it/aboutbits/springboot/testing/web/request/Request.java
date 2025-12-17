@@ -1,7 +1,5 @@
 package it.aboutbits.springboot.testing.web.request;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.aboutbits.springboot.toolbox.web.response.ErrorResponse;
 import it.aboutbits.springboot.toolbox.web.response.ItemResponse;
 import it.aboutbits.springboot.toolbox.web.response.ItemResponseWithMeta;
@@ -16,7 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -29,14 +29,14 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 
 @Slf4j
-public abstract class Request<R extends MockHttpServletRequestBuilder> {
+public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>> {
     protected record UsernameAndPassword(String username, String password) {
     }
 
     protected record UrlWithVariables(String url, Object... pathVariables) {
     }
 
-    protected final ObjectMapper objectMapper;
+    protected final JsonMapper jsonMapper;
     protected final MockMvc mockMvc;
     protected final UrlWithVariables url;
     protected final MediaType contentType;
@@ -50,12 +50,12 @@ public abstract class Request<R extends MockHttpServletRequestBuilder> {
 
     Request(
             @NonNull MockMvc mockMvc,
-            @NonNull ObjectMapper objectMapper,
+            @NonNull JsonMapper jsonMapper,
             @NonNull String url,
             @NonNull MediaType contentType,
             @NonNull Object... pathVariables
     ) {
-        this.objectMapper = objectMapper;
+        this.jsonMapper = jsonMapper;
 
         this.mockMvc = mockMvc;
         this.url = new UrlWithVariables(url, pathVariables);
@@ -74,8 +74,8 @@ public abstract class Request<R extends MockHttpServletRequestBuilder> {
         }
 
         try {
-            this.body = objectMapper.writeValueAsString(body);
-        } catch (JsonProcessingException e) {
+            this.body = jsonMapper.writeValueAsString(body);
+        } catch (JacksonException e) {
             log.error("Failed to write body as JSON.", e);
             throw new RuntimeException(e);
         }
@@ -113,12 +113,12 @@ public abstract class Request<R extends MockHttpServletRequestBuilder> {
 
         var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
-        var typeFactory = objectMapper.getTypeFactory();
+        var typeFactory = jsonMapper.getTypeFactory();
         var javaType = typeFactory.constructParametricType(ItemResponse.class, clazz);
 
         try {
-            return objectMapper.readValue(resString, javaType);
-        } catch (JsonProcessingException e) {
+            return jsonMapper.readValue(resString, javaType);
+        } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
             throw new RuntimeException(e);
         }
@@ -133,12 +133,12 @@ public abstract class Request<R extends MockHttpServletRequestBuilder> {
 
         var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
-        var typeFactory = objectMapper.getTypeFactory();
+        var typeFactory = jsonMapper.getTypeFactory();
         var javaType = typeFactory.constructParametricType(ItemResponseWithMeta.class, clazz, metaClass);
 
         try {
-            return objectMapper.readValue(resString, javaType);
-        } catch (JsonProcessingException e) {
+            return jsonMapper.readValue(resString, javaType);
+        } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
             throw new RuntimeException(e);
         }
@@ -150,12 +150,12 @@ public abstract class Request<R extends MockHttpServletRequestBuilder> {
 
         var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
-        var typeFactory = objectMapper.getTypeFactory();
+        var typeFactory = jsonMapper.getTypeFactory();
         var javaType = typeFactory.constructParametricType(ListResponse.class, clazz);
 
         try {
-            return objectMapper.readValue(resString, javaType);
-        } catch (JsonProcessingException e) {
+            return jsonMapper.readValue(resString, javaType);
+        } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
             throw new RuntimeException(e);
         }
@@ -167,12 +167,12 @@ public abstract class Request<R extends MockHttpServletRequestBuilder> {
 
         var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
-        var typeFactory = objectMapper.getTypeFactory();
+        var typeFactory = jsonMapper.getTypeFactory();
         var javaType = typeFactory.constructParametricType(PagedResponse.class, clazz);
 
         try {
-            return objectMapper.readValue(resString, javaType);
-        } catch (JsonProcessingException e) {
+            return jsonMapper.readValue(resString, javaType);
+        } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
             throw new RuntimeException(e);
         }
@@ -185,8 +185,8 @@ public abstract class Request<R extends MockHttpServletRequestBuilder> {
         var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
         try {
-            return objectMapper.readValue(resString, ErrorResponse.class);
-        } catch (JsonProcessingException e) {
+            return jsonMapper.readValue(resString, ErrorResponse.class);
+        } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
             throw new RuntimeException(e);
         }
