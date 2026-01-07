@@ -58,7 +58,6 @@ public class LessThanValueSource implements ValueSource {
         throw new IllegalArgumentException("Property class not supported!");
     }
 
-
     private static Stream<Byte> getByteStream(Object[] args) {
         var minValue = Byte.MIN_VALUE;
         var maxValue = (byte) (Long.valueOf((long) args[0]).byteValue() - 1);
@@ -69,7 +68,6 @@ public class LessThanValueSource implements ValueSource {
                         .mapToObj(value -> Byte.valueOf((byte) value))
         );
     }
-
 
     private static Stream<Short> getShortStream(Object[] args) {
         var minValue = Short.MIN_VALUE;
@@ -82,7 +80,6 @@ public class LessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<Integer> getIntegerStream(Object[] args) {
         var minValue = Integer.MIN_VALUE;
         var maxValue = Long.valueOf((long) args[0]).intValue() - 1;
@@ -93,7 +90,6 @@ public class LessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<Long> getLongStream(Object[] args) {
         var minValue = Long.MIN_VALUE;
         var maxValue = (long) args[0] - 1;
@@ -103,7 +99,6 @@ public class LessThanValueSource implements ValueSource {
                 RANDOM.longs(1, minValue, maxValue).boxed()
         );
     }
-
 
     private static Stream<Float> getFloatStream(Object[] args) {
         var minValue = Float.MAX_VALUE * -1;
@@ -117,7 +112,6 @@ public class LessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<Double> getDoubleStream(Object[] args) {
         var minValue = Double.MAX_VALUE * -1;
         var maxValue = Long.valueOf((long) args[0]).doubleValue() - 0.1d;
@@ -127,7 +121,6 @@ public class LessThanValueSource implements ValueSource {
                 RANDOM.doubles(1, minValue, maxValue).boxed()
         );
     }
-
 
     private static Stream<BigInteger> getBigIntegerStream(Object[] args) {
         var minValue = Long.MIN_VALUE;
@@ -141,7 +134,6 @@ public class LessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<BigDecimal> getBigDecimalStream(Object[] args) {
         var minValue = Double.MAX_VALUE * -1;
         var maxValue = Long.valueOf((long) args[0]).doubleValue() - 0.1d;
@@ -153,7 +145,6 @@ public class LessThanValueSource implements ValueSource {
                 )
         );
     }
-
 
     private static Stream<ScaledBigDecimal> getScaledBigDecimalStream(Object[] args) {
         var minValue = Double.MAX_VALUE * -1;

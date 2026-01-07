@@ -87,7 +87,6 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<String> getStringStream(long value) {
         return Stream.concat(
                 Stream.of(""),
@@ -95,7 +94,6 @@ public class SizeLessThanValueSource implements ValueSource {
                         .map(length -> generateRandomString(Math.toIntExact(length)))
         );
     }
-
 
     private static Stream<Collection<?>> getArrayListStream(long value) {
         return Stream.concat(
@@ -108,7 +106,6 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<Collection<?>> getLinkedListStream(long value) {
         return Stream.concat(
                 Stream.of(new LinkedList<>()),
@@ -119,7 +116,6 @@ public class SizeLessThanValueSource implements ValueSource {
                         ))
         );
     }
-
 
     private static Stream<Collection<?>> getHashSetStream(long value) {
         return Stream.concat(
@@ -132,7 +128,6 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<Collection<?>> getLinkedHashSetStream(long value) {
         return Stream.concat(
                 Stream.of(new LinkedHashSet<>()),
@@ -143,7 +138,6 @@ public class SizeLessThanValueSource implements ValueSource {
                         ))
         );
     }
-
 
     private static Stream<Collection<?>> getTreeSetStream(long value) {
         return Stream.concat(
@@ -156,7 +150,6 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<Map<?, ?>> getHashMapStream(long value) {
         return Stream.concat(
                 Stream.of(new HashMap<>()),
@@ -167,7 +160,6 @@ public class SizeLessThanValueSource implements ValueSource {
                         ))
         );
     }
-
 
     private static Stream<Map<?, ?>> getLinkedHashMapStream(long value) {
         return Stream.concat(
@@ -180,7 +172,6 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-
     private static Stream<Map<?, ?>> getTreeMapStream(long value) {
         return Stream.concat(
                 Stream.of(new TreeMap<>()),
@@ -191,7 +182,6 @@ public class SizeLessThanValueSource implements ValueSource {
                         ))
         );
     }
-
 
     private static Stream<Map<?, ?>> getConcurrentHashMapStream(long value) {
         return Stream.concat(

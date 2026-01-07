@@ -76,16 +76,13 @@ public class SizeGreaterThanValueSource implements ValueSource {
                         Math.toIntExact(size),
                         arrayClass
                 ));
-
     }
-
 
     private static Stream<String> getStringStream(long value) {
         return getTestSizes(value)
                 .stream()
                 .map(size -> generateRandomString(Math.toIntExact(size)));
     }
-
 
     private static Stream<Collection<?>> getHashSetStream(long value) {
         return getTestSizes(value)
@@ -96,7 +93,6 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-
     private static Stream<Collection<?>> getLinkedHashSetStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -105,7 +101,6 @@ public class SizeGreaterThanValueSource implements ValueSource {
                         new LinkedHashSet<>()
                 ));
     }
-
 
     private static Stream<Collection<?>> getTreeSetStream(long value) {
         return getTestSizes(value)
@@ -116,7 +111,6 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-
     private static Stream<Collection<?>> getArrayListStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -125,7 +119,6 @@ public class SizeGreaterThanValueSource implements ValueSource {
                         new ArrayList<>()
                 ));
     }
-
 
     private static Stream<Collection<?>> getLinkedListStream(long value) {
         return getTestSizes(value)
@@ -136,7 +129,6 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-
     private static Stream<Map<?, ?>> getHashMapStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -145,7 +137,6 @@ public class SizeGreaterThanValueSource implements ValueSource {
                         new HashMap<>()
                 ));
     }
-
 
     private static Stream<Map<?, ?>> getLinkedHashMapStream(long value) {
         return getTestSizes(value)
@@ -156,7 +147,6 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-
     private static Stream<Map<?, ?>> getTreeMapStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -165,7 +155,6 @@ public class SizeGreaterThanValueSource implements ValueSource {
                         new TreeMap<>()
                 ));
     }
-
 
     private static Stream<Map<?, ?>> getConcurrentHashMapStream(long value) {
         return getTestSizes(value)
