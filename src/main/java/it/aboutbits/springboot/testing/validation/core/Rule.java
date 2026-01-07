@@ -3,7 +3,9 @@ package it.aboutbits.springboot.testing.validation.core;
 import it.aboutbits.springboot.testing.validation.source.InertValueSource;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class Rule {
     @Getter(AccessLevel.PACKAGE)
     private final String property;

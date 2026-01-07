@@ -1,7 +1,7 @@
 package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
-import lombok.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
 
+@NullMarked
 public class SizeGreaterThanValueSource implements ValueSource {
     private static final Map<Class<?>, LongFunction<Stream<?>>> TYPE_SOURCES = new HashMap<>();
     private static final Random RANDOM = new Random();
@@ -78,14 +79,14 @@ public class SizeGreaterThanValueSource implements ValueSource {
 
     }
 
-    @NonNull
+
     private static Stream<String> getStringStream(long value) {
         return getTestSizes(value)
                 .stream()
                 .map(size -> generateRandomString(Math.toIntExact(size)));
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getHashSetStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -95,7 +96,7 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getLinkedHashSetStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -105,7 +106,7 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getTreeSetStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -115,7 +116,7 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getArrayListStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -125,7 +126,7 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getLinkedListStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -135,7 +136,7 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-    @NonNull
+
     private static Stream<Map<?, ?>> getHashMapStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -145,7 +146,7 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-    @NonNull
+
     private static Stream<Map<?, ?>> getLinkedHashMapStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -155,7 +156,7 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-    @NonNull
+
     private static Stream<Map<?, ?>> getTreeMapStream(long value) {
         return getTestSizes(value)
                 .stream()
@@ -165,7 +166,7 @@ public class SizeGreaterThanValueSource implements ValueSource {
                 ));
     }
 
-    @NonNull
+
     private static Stream<Map<?, ?>> getConcurrentHashMapStream(long value) {
         return getTestSizes(value)
                 .stream()

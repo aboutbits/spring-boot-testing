@@ -1,6 +1,6 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
-import lombok.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -9,17 +9,22 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+@SuppressWarnings({"java:S119"})
+@NullMarked
 public abstract class AllTestDataReader<ITEM> {
+    @SuppressWarnings("unused")
     public ITEM returnFirst() {
-        return (ITEM) this.returnAll().getFirst();
+        return this.returnAll().getFirst();
     }
 
+    @SuppressWarnings("unused")
     public List<ITEM> returnAll() {
         return this.fetch();
     }
 
     @SafeVarargs
-    public final List<ITEM> returnSorted(@NonNull Comparator<ITEM>... comparators) {
+    @SuppressWarnings("unused")
+    public final List<ITEM> returnSorted(Comparator<ITEM>... comparators) {
         if (comparators.length == 0) {
             throw new IllegalArgumentException("At least one comparator must be provided");
         }
@@ -33,8 +38,8 @@ public abstract class AllTestDataReader<ITEM> {
     }
 
     @SafeVarargs
-    @SuppressWarnings("unchecked")
-    public final <U extends Comparable<? super U>> List<ITEM> returnSorted(@NonNull Function<ITEM, ? extends Comparable<?>>... comparators) {
+    @SuppressWarnings({"unchecked", "unused"})
+    public final <U extends Comparable<? super U>> List<ITEM> returnSorted(Function<ITEM, ? extends Comparable<?>>... comparators) {
         if (comparators.length == 0) {
             throw new IllegalArgumentException("At least one comparator must be provided");
         }
@@ -47,22 +52,24 @@ public abstract class AllTestDataReader<ITEM> {
         return returnAll().stream().sorted(combinedComparator).toList();
     }
 
-    public <U extends Comparable<? super U>> AllAndFiltered<ITEM> returnFiltered(@NonNull Predicate<ITEM> predicate) {
+    @SuppressWarnings("unused")
+    public <U extends Comparable<? super U>> AllAndFiltered<ITEM> returnFiltered(Predicate<ITEM> predicate) {
         var all = this.returnAll();
-        return new AllAndFiltered<ITEM>(
+        return new AllAndFiltered<>(
                 all,
                 all.stream().filter(predicate).toList(),
                 all.stream().filter(item -> !predicate.test(item)).toList()
         );
     }
 
+    @SuppressWarnings("unused")
     public Set<ITEM> returnSet() {
         return new HashSet<>(this.returnAll());
     }
 
     protected abstract List<ITEM> fetch();
 
-    public record AllAndFiltered<T>(@NonNull List<T> all, @NonNull List<T> filtered, @NonNull List<T> other) {
+    public record AllAndFiltered<T>(List<T> all, List<T> filtered, List<T> other) {
 
     }
 }

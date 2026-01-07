@@ -1,9 +1,11 @@
 package it.aboutbits.springboot.testing.validation.core;
 
-import lombok.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@SuppressWarnings("unused")
+@NullMarked
 public interface ValidationRulesData {
-    void addRule(@NonNull Rule rule);
+    void addRule(Rule rule);
 
-    void addValidationFunction(@NonNull CustomValidationFunction function);
+    void addValidationFunction(CustomValidationFunction function);
 }

@@ -5,11 +5,12 @@ import it.aboutbits.springboot.testing.validation.core.Rule;
 import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
 import it.aboutbits.springboot.testing.validation.source.LessThanValueSource;
 import it.aboutbits.springboot.testing.validation.source.ZeroValueSource;
-import lombok.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 @SuppressWarnings("unchecked")
+@NullMarked
 public interface PositiveRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
-    default V positive(@NonNull String property) {
+    default V positive(String property) {
         addRule(
                 new Rule(property, LessThanValueSource.class, 0L)
         );

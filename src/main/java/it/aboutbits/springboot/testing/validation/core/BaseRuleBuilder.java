@@ -18,15 +18,16 @@ import it.aboutbits.springboot.testing.validation.rule.SizeRule;
 import it.aboutbits.springboot.testing.validation.rule.ValidBeanRule;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-@RequiredArgsConstructor
+@NullMarked
 public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<R>> implements
         ValidationRulesData,
         BetweenRule<R>,
@@ -52,18 +53,20 @@ public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<R>> implements
     private final List<CustomValidationFunction> validationFunctions = new ArrayList<>();
 
     @Setter(AccessLevel.PACKAGE)
+    @Nullable
     private Runnable triggerValidation;
 
     @Override
-    public void addRule(@NonNull Rule rule) {
+    public void addRule(Rule rule) {
         rules.add(rule);
     }
 
     @Override
-    public void addValidationFunction(@NonNull CustomValidationFunction function) {
+    public void addValidationFunction(CustomValidationFunction function) {
         validationFunctions.add(function);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends BaseRuleBuilder<T>> T withAdditionalRules(Consumer<T> registrar) {
         var self = (T) this;
         registrar.accept(self);
@@ -71,6 +74,7 @@ public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<R>> implements
     }
 
     public void isCompliant() {
+        Objects.requireNonNull(triggerValidation);
         triggerValidation.run();
     }
 }

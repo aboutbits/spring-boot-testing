@@ -1,24 +1,25 @@
 package it.aboutbits.springboot.testing.web.request;
 
-import lombok.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.json.JsonMapper;
 
+@NullMarked
 public class PatchMultipart extends MultipartRequest {
     PatchMultipart(
-            @NonNull MockMvc mockMvc,
-            @NonNull JsonMapper objectMapper,
-            @NonNull String url,
-            @NonNull Object... pathVariables
+            MockMvc mockMvc,
+            JsonMapper objectMapper,
+            String url,
+            Object... pathVariables
     ) {
         super(mockMvc, objectMapper, url, pathVariables);
     }
 
     @Override
-    protected @NonNull MockMultipartHttpServletRequestBuilder getRequestBuilder(@NonNull UrlWithVariables url) {
+    protected MockMultipartHttpServletRequestBuilder getRequestBuilder(UrlWithVariables url) {
         return MockMvcRequestBuilders.multipart(HttpMethod.PATCH, url.url(), url.pathVariables());
     }
 

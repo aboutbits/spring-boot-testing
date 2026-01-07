@@ -1,6 +1,7 @@
 package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
+import org.jspecify.annotations.NullMarked;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+@NullMarked
 public class FutureValueSource implements ValueSource {
     private static final Map<Class<?>, Function<Object[], Stream<?>>> TYPE_SOURCES = new HashMap<>();
 
