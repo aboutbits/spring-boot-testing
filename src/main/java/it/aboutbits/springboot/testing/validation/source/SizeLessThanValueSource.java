@@ -1,7 +1,7 @@
 package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
-import lombok.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
 
+@NullMarked
 public class SizeLessThanValueSource implements ValueSource {
     private static final Map<Class<?>, LongFunction<Stream<?>>> TYPE_SOURCES = new HashMap<>();
     private static final Random RANDOM = new Random();
@@ -86,7 +87,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<String> getStringStream(long value) {
         return Stream.concat(
                 Stream.of(""),
@@ -95,7 +96,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getArrayListStream(long value) {
         return Stream.concat(
                 Stream.of(new ArrayList<>()),
@@ -107,7 +108,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getLinkedListStream(long value) {
         return Stream.concat(
                 Stream.of(new LinkedList<>()),
@@ -119,7 +120,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getHashSetStream(long value) {
         return Stream.concat(
                 Stream.of(new HashSet<>()),
@@ -131,7 +132,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getLinkedHashSetStream(long value) {
         return Stream.concat(
                 Stream.of(new LinkedHashSet<>()),
@@ -143,7 +144,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Collection<?>> getTreeSetStream(long value) {
         return Stream.concat(
                 Stream.of(new TreeSet<>()),
@@ -155,7 +156,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Map<?, ?>> getHashMapStream(long value) {
         return Stream.concat(
                 Stream.of(new HashMap<>()),
@@ -167,7 +168,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Map<?, ?>> getLinkedHashMapStream(long value) {
         return Stream.concat(
                 Stream.of(new LinkedHashMap<>()),
@@ -179,7 +180,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Map<?, ?>> getTreeMapStream(long value) {
         return Stream.concat(
                 Stream.of(new TreeMap<>()),
@@ -191,7 +192,7 @@ public class SizeLessThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
+
     private static Stream<Map<?, ?>> getConcurrentHashMapStream(long value) {
         return Stream.concat(
                 Stream.of(new ConcurrentHashMap<>()),

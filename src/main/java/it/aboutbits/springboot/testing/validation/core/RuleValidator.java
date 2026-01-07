@@ -6,9 +6,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import lombok.NonNull;
 import lombok.SneakyThrows;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -41,19 +41,16 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * @nonBeanTypes This is a whitelist that holds classes that don't implicitly require @Valid. We assume that @Valid is required
  * for all substructures.
  */
+@NullMarked
 final class RuleValidator<P> {
     private static final ValidatorFactory VALIDATOR_FACTORY = Validation.buildDefaultValidatorFactory();
 
     record AssertionParameter<P>(
-            @NonNull
             P parameterUnderTest,
             @Nullable
             Consumer<?> functionToCallWithParameter,
-            @NonNull
             List<Rule> rules,
-            @NonNull
             List<CustomValidationFunction> functions,
-            @NonNull
             Set<Class<?>> nonBeanTypes
     ) {
     }
@@ -117,6 +114,7 @@ final class RuleValidator<P> {
 
     private static <P> void assertThatSuppliedParameterIsValid(
             P parameterUnderTest,
+            @Nullable
             Consumer<P> functionToCallWithParameter,
             Validator validator
     ) {
@@ -132,7 +130,7 @@ final class RuleValidator<P> {
                                 violatingFieldMessages.collect(Collectors.joining(" | "))
                         )
                         .isFalse();
-            } catch (Exception ignored) {
+            } catch (Exception _) {
                 // ignore any other exceptions
             }
         } else {
@@ -164,6 +162,7 @@ final class RuleValidator<P> {
     private static <P> void assertThatValidationIsCompliantForEachProperty(
             List<Rule> rules,
             P parameterUnderTest,
+            @Nullable
             Consumer<P> functionToCallWithParameter,
             Validator validator
     ) {
@@ -271,7 +270,7 @@ final class RuleValidator<P> {
         }
     }
 
-    @NonNull
+
     @SneakyThrows(ReflectiveOperationException.class)
     private static <P> Stream<?> getValues(Rule rule, P parameterUnderTest) {
         var source = (ValueSource) rule.getValueSource().getDeclaredConstructors()[0].newInstance();
@@ -279,7 +278,7 @@ final class RuleValidator<P> {
         return source.values(getPropertyType(rule.getProperty(), parameterUnderTest), rule.getArgs());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "java:S3011"})
     private static <T> T createCopyWithAlteredProperty(T original, String property, Object alteredValue) {
         try {
             // Get the class of the original object
@@ -334,6 +333,7 @@ final class RuleValidator<P> {
         }
     }
 
+    @SuppressWarnings("java:S3011")
     private static <T> T createCopyWithAlteredValues(
             Class<T> clazz,
             Class<?>[] parameterTypes,
@@ -348,7 +348,7 @@ final class RuleValidator<P> {
 
             // Create a copy with the altered property value
             instance = constructor.newInstance(newPropertyValues);
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException _) {
             // Get the no args constructor
             var constructor = clazz.getDeclaredConstructor();
             constructor.setAccessible(true);
@@ -393,11 +393,12 @@ final class RuleValidator<P> {
     private static boolean hasNullableAnnotation(String propertyName, Object object) {
         var field = getFieldOrFail(propertyName, object);
 
-        return field.getAnnotation(org.springframework.lang.Nullable.class) != null
-                || field.getAnnotation(jakarta.annotation.Nullable.class) != null;
+        return field.getAnnotatedType().isAnnotationPresent(org.jspecify.annotations.Nullable.class)
+                || field.isAnnotationPresent(jakarta.annotation.Nullable.class)
+                || field.isAnnotationPresent(org.springframework.lang.Nullable.class);
     }
 
-    @NonNull
+
     private static Field getFieldOrFail(String propertyName, Object object) {
         var clazz = object.getClass();
 

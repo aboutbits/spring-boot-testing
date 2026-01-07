@@ -4,10 +4,11 @@ import it.aboutbits.springboot.toolbox.type.CustomType;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Arrays;
@@ -19,6 +20,7 @@ import java.util.function.Consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@NullMarked
 public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
     @Getter(AccessLevel.PROTECTED)
     private final R ruleBuilder;
@@ -30,9 +32,11 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
             )
     );
 
+    @Nullable
     private Object parameterUnderTest;
 
     @Setter(AccessLevel.PRIVATE)
+    @Nullable
     private Consumer<?> functionToCallWithParameter = null;
 
     /**
@@ -45,7 +49,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         NON_BEAN_TYPES.add(type);
     }
 
-    public <P> CallBuilder<R, P> of(@NonNull P parameterUnderTest) {
+    public <P> CallBuilder<R, P> of(P parameterUnderTest) {
         this.parameterUnderTest = parameterUnderTest;
         ruleBuilder.setTriggerValidation(this::assertValidation);
         return new CallBuilder<>(this);
@@ -53,9 +57,9 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
 
     @SuppressWarnings("unused")
     public AnnotationChecker calling(
-            @NonNull Class<?> classUnderTest,
-            @NonNull String methodName,
-            @NonNull Class<?>... methodParameterTypes
+            Class<?> classUnderTest,
+            String methodName,
+            Class<?>... methodParameterTypes
     ) {
         return new AnnotationChecker(classUnderTest, methodName, methodParameterTypes);
     }
@@ -93,7 +97,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         private final BaseValidationAssert<R> parent;
 
         @SuppressWarnings("unused")
-        public R calling(@NonNull Consumer<P> functionToCallWithParameter) {
+        public R calling(Consumer<P> functionToCallWithParameter) {
             parent.setFunctionToCallWithParameter(functionToCallWithParameter);
             return parent.ruleBuilder;
         }
@@ -105,8 +109,8 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
 
         @SuppressWarnings({"unused", "unchecked"})
         public <ID> R calling(
-                @NonNull BiConsumer<ID, P> functionToCallWithParameter,
-                @NonNull ID id
+                BiConsumer<ID, P> functionToCallWithParameter,
+                ID id
         ) {
             parent.setFunctionToCallWithParameter(
                     p -> functionToCallWithParameter.accept(id, (P) p)
@@ -116,9 +120,9 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
 
         @SuppressWarnings({"unused", "unchecked"})
         public <A, B> R calling(
-                @NonNull TriConsumer<A, B, P> functionToCallWithParameter,
-                @NonNull A a,
-                @NonNull B b
+                TriConsumer<A, B, P> functionToCallWithParameter,
+                A a,
+                B b
         ) {
             parent.setFunctionToCallWithParameter(
                     p -> functionToCallWithParameter.accept(a, b, (P) p)
@@ -128,6 +132,9 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
     }
 
     private void assertValidation() {
+        if (parameterUnderTest == null) {
+            throw new IllegalStateException("Parameter under test not set.");
+        }
         new RuleValidator<>().assertValidation(
                 new RuleValidator.AssertionParameter<>(
                         parameterUnderTest,

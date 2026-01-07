@@ -2,7 +2,7 @@ package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
-import lombok.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+@NullMarked
 public class BiggerThanValueSource implements ValueSource {
     private static final Map<Class<?>, Function<Object[], Stream<?>>> TYPE_SOURCES = new HashMap<>();
     private static final Random RANDOM = new Random();
@@ -56,7 +57,6 @@ public class BiggerThanValueSource implements ValueSource {
         throw new IllegalArgumentException("Property class not supported!");
     }
 
-    @NonNull
     private static Stream<Byte> getByteStream(Object[] args) {
         var minValue = (byte) (Long.valueOf((long) args[0]).byteValue() + 1);
         var maxValue = Byte.MAX_VALUE;
@@ -68,7 +68,6 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
     private static Stream<Short> getShortStream(Object[] args) {
         var minValue = (short) (Long.valueOf((long) args[0]).shortValue() + 1);
         var maxValue = Short.MAX_VALUE;
@@ -80,7 +79,6 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
     private static Stream<Integer> getIntegerStream(Object[] args) {
         var minValue = Long.valueOf((long) args[0]).intValue() + 1;
         var maxValue = Integer.MAX_VALUE;
@@ -91,7 +89,6 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
     private static Stream<Long> getLongStream(Object[] args) {
         var minValue = (long) args[0] + 1;
         var maxValue = Long.MAX_VALUE;
@@ -102,7 +99,6 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
     private static Stream<Float> getFloatStream(Object[] args) {
         var minValue = Long.valueOf((long) args[0]).floatValue() + 0.1f;
         var maxValue = Float.MAX_VALUE;
@@ -115,7 +111,6 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
     private static Stream<Double> getDoubleStream(Object[] args) {
         var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
         var maxValue = Double.MAX_VALUE;
@@ -126,7 +121,6 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
     private static Stream<BigInteger> getBigIntegerStream(Object[] args) {
         var minValue = (long) args[0] + 1;
         var maxValue = Long.MAX_VALUE;
@@ -139,9 +133,8 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
     private static Stream<BigDecimal> getBigDecimalStream(Object[] args) {
-        var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
+        var minValue = (long) args[0] + 0.1d;
         var maxValue = Double.MAX_VALUE;
 
         return Stream.concat(
@@ -152,9 +145,8 @@ public class BiggerThanValueSource implements ValueSource {
         );
     }
 
-    @NonNull
     private static Stream<ScaledBigDecimal> getScaledBigDecimalStream(Object[] args) {
-        var minValue = Long.valueOf((long) args[0]).doubleValue() + 0.1d;
+        var minValue = (long) args[0] + 0.1d;
         var maxValue = Double.MAX_VALUE;
 
         return Stream.concat(

@@ -17,6 +17,8 @@
 
     <properties>
         <java.version>25</java.version>
+        <errorprone.version>2.45.0</errorprone.version>
+        <nullaway.version>0.12.14</nullaway.version>
     </properties>
 
     <dependencyManagement>
@@ -73,6 +75,20 @@
             <artifactId>datafaker</artifactId>
             <version>2.5.3</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.tngtech.archunit/archunit-junit5 -->
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>1.4.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5-api</artifactId>
+            <version>1.4.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -90,7 +106,36 @@
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${errorprone.version}</version>
+                        </path>
+                        <path>
+                            <groupId>com.uber.nullaway</groupId>
+                            <artifactId>nullaway</artifactId>
+                            <version>${nullaway.version}</version>
+                        </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-Amapstruct.unmappedTargetPolicy=ERROR</arg>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>--should-stop=ifError=FLOW</arg>
+                        <!-- @formatter:off -->
+                        <arg>-Xplugin:ErrorProne -XepDisableAllChecks -XepOpt:NullAway:AnnotatedPackages=it.aboutbits.springbootboilerplate -XepOpt:NullAway:JSpecifyMode=true -Xep:NullAway:ERROR -XepOpt:NullAway:ExcludedFieldAnnotations=org.mockito.InjectMocks,org.mockito.Mock</arg>
+                        <!-- @formatter:on -->
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                    <fork>true</fork>
                 </configuration>
             </plugin>
             <plugin>
