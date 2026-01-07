@@ -743,7 +743,6 @@ class ValidationAssertTest {
                 .isCompliant();
     }
 
-
     @SuppressWarnings("checkstyle:MethodLength")
     private static SomeValidParameter getSomeValidParameter() {
         return new SomeValidParameter(

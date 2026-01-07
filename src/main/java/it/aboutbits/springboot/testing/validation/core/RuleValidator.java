@@ -270,7 +270,6 @@ final class RuleValidator<P> {
         }
     }
 
-
     @SneakyThrows(ReflectiveOperationException.class)
     private static <P> Stream<?> getValues(Rule rule, P parameterUnderTest) {
         var source = (ValueSource) rule.getValueSource().getDeclaredConstructors()[0].newInstance();
@@ -397,7 +396,6 @@ final class RuleValidator<P> {
                 || field.isAnnotationPresent(jakarta.annotation.Nullable.class)
                 || field.isAnnotationPresent(org.springframework.lang.Nullable.class);
     }
-
 
     private static Field getFieldOrFail(String propertyName, Object object) {
         var clazz = object.getClass();

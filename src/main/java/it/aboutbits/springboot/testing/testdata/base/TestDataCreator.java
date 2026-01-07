@@ -84,5 +84,4 @@ public abstract class TestDataCreator<ITEM> {
     }
 
     protected abstract ITEM create(int index);
-
 }
