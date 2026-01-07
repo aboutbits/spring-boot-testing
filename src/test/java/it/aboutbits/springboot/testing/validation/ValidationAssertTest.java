@@ -1,6 +1,6 @@
 package it.aboutbits.springboot.testing.validation;
 
-import it.aboutbits.springboot.testing.support.archunit.ArchIgnoreNoProductionCounterpart;
+import it.aboutbits.springboot.testing.archunit.support.ArchIgnoreNoProductionCounterpart;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.BaseValidationAssert;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
@@ -909,7 +910,7 @@ class ValidationAssertTest {
         );
     }
 
-    public static final class TestValidationAssert extends BaseValidationAssert<BaseRuleBuilder<?>> {
+    public static final class TestValidationAssert extends BaseValidationAssert<@NonNull BaseRuleBuilder<?>> {
         private TestValidationAssert() {
             super(new TestRuleBuilder());
         }
@@ -918,7 +919,7 @@ class ValidationAssertTest {
             return new TestValidationAssert();
         }
 
-        public static final class TestRuleBuilder extends BaseRuleBuilder<TestRuleBuilder> {
+        public static final class TestRuleBuilder extends BaseRuleBuilder<@NonNull TestRuleBuilder> {
         }
     }
 

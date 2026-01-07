@@ -1,4 +1,4 @@
-package it.aboutbits.springboot.testing.support.archunit;
+package it.aboutbits.springboot.testing.archunit.support;
 
 import com.tngtech.archunit.junit.ArchIgnore;
 
