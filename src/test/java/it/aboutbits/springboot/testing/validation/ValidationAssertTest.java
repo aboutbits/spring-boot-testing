@@ -1,6 +1,6 @@
 package it.aboutbits.springboot.testing.validation;
 
-import it.aboutbits.springboot.testing.archunit.support.ArchIgnoreNoProductionCounterpart;
+import it.aboutbits.archunit.toolbox.support.ArchIgnoreNoProductionCounterpart;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.BaseValidationAssert;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;

@@ -90,7 +90,7 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
     }
 
     @SuppressWarnings("unused")
-    public Request<R> param(String name, Object value) {
+    public Request<R> param(String name, @Nullable Object value) {
         this.parameters.put(name, String.valueOf(value));
         return this;
     }
