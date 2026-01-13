@@ -17,8 +17,8 @@
 
     <properties>
         <java.version>25</java.version>
-        <errorprone.version>2.45.0</errorprone.version>
-        <nullaway.version>0.12.14</nullaway.version>
+        <errorprone.version>2.46.0</errorprone.version>
+        <nullaway.version>0.12.15</nullaway.version>
     </properties>
 
     <dependencyManagement>
