@@ -7,9 +7,10 @@ import it.aboutbits.springboot.toolbox.web.response.ListResponse;
 import it.aboutbits.springboot.toolbox.web.response.PagedResponse;
 import it.aboutbits.springboot.toolbox.web.response.meta.Meta;
 import jakarta.servlet.http.Cookie;
-import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,7 +29,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 
+@SuppressWarnings("java:S1192")
 @Slf4j
+@NullMarked
 public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>> {
     protected record UsernameAndPassword(String username, String password) {
     }
@@ -42,18 +45,20 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
     protected final MediaType contentType;
 
     protected String body = "";
+    @Nullable
     protected HttpStatus status = null;
     protected Cookie[] cookies = new Cookie[0];
+    @Nullable
     protected UsernameAndPassword basicAuth = null;
     protected Map<String, String> parameters = new HashMap<>();
     protected Map<String, String[]> parametersArray = new HashMap<>();
 
     Request(
-            @NonNull MockMvc mockMvc,
-            @NonNull JsonMapper jsonMapper,
-            @NonNull String url,
-            @NonNull MediaType contentType,
-            @NonNull Object... pathVariables
+            MockMvc mockMvc,
+            JsonMapper jsonMapper,
+            String url,
+            MediaType contentType,
+            Object... pathVariables
     ) {
         this.jsonMapper = jsonMapper;
 
@@ -62,12 +67,14 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
         this.contentType = contentType;
     }
 
-    public Request<R> cookies(@NonNull Cookie... cookies) {
+    @SuppressWarnings("unused")
+    public Request<R> cookies(Cookie... cookies) {
         this.cookies = cookies;
         return this;
     }
 
-    public Request<R> body(@NonNull Object body) {
+    @SuppressWarnings("unused")
+    public Request<R> body(Object body) {
         if (body instanceof String stringBody) {
             this.body = stringBody;
             return this;
@@ -77,17 +84,19 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
             this.body = jsonMapper.writeValueAsString(body);
         } catch (JacksonException e) {
             log.error("Failed to write body as JSON.", e);
-            throw new RuntimeException(e);
+            throw new RequestBodyException(e);
         }
         return this;
     }
 
-    public Request<R> param(@NonNull String name, Object value) {
+    @SuppressWarnings("unused")
+    public Request<R> param(String name, @Nullable Object value) {
         this.parameters.put(name, String.valueOf(value));
         return this;
     }
 
-    public Request<R> param(@NonNull String name, Collection<?> values) {
+    @SuppressWarnings("unused")
+    public Request<R> param(String name, Collection<?> values) {
         this.parametersArray.put(
                 name,
                 values.stream()
@@ -97,18 +106,21 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
         return this;
     }
 
-    public Request<R> expectStatus(@NonNull HttpStatus status) {
+    @SuppressWarnings("unused")
+    public Request<R> expectStatus(HttpStatus status) {
         this.status = status;
         return this;
     }
 
-    public Request<R> basicAuth(@NonNull String username, @NonNull String password) {
+    @SuppressWarnings("unused")
+    public Request<R> basicAuth(String username, String password) {
         this.basicAuth = new UsernameAndPassword(username, password);
         return this;
     }
 
     @SneakyThrows(UnsupportedEncodingException.class)
-    public <T> ItemResponse<T> returnItem(@NonNull Class<T> clazz) {
+    @SuppressWarnings("unused")
+    public <T> ItemResponse<T> returnItem(Class<T> clazz) {
         var res = _execute();
 
         var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
@@ -120,14 +132,15 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
             return jsonMapper.readValue(resString, javaType);
         } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
-            throw new RuntimeException(e);
+            throw new ResponseBodyException(e);
         }
     }
 
     @SneakyThrows(UnsupportedEncodingException.class)
+    @SuppressWarnings("unused")
     public <T, M extends Meta> ItemResponseWithMeta<T, M> returnItem(
-            @NonNull Class<T> clazz,
-            @NonNull Class<M> metaClass
+            Class<T> clazz,
+            Class<M> metaClass
     ) {
         var res = _execute();
 
@@ -140,12 +153,13 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
             return jsonMapper.readValue(resString, javaType);
         } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
-            throw new RuntimeException(e);
+            throw new ResponseBodyException(e);
         }
     }
 
     @SneakyThrows(UnsupportedEncodingException.class)
-    public <T> ListResponse<T> returnList(@NonNull Class<T> clazz) {
+    @SuppressWarnings("unused")
+    public <T> ListResponse<T> returnList(Class<T> clazz) {
         var res = _execute();
 
         var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
@@ -157,12 +171,13 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
             return jsonMapper.readValue(resString, javaType);
         } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
-            throw new RuntimeException(e);
+            throw new ResponseBodyException(e);
         }
     }
 
     @SneakyThrows(UnsupportedEncodingException.class)
-    public <T> PagedResponse<T> returnPage(@NonNull Class<T> clazz) {
+    @SuppressWarnings("unused")
+    public <T> PagedResponse<T> returnPage(Class<T> clazz) {
         var res = _execute();
 
         var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
@@ -174,11 +189,12 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
             return jsonMapper.readValue(resString, javaType);
         } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
-            throw new RuntimeException(e);
+            throw new ResponseBodyException(e);
         }
     }
 
     @SneakyThrows(UnsupportedEncodingException.class)
+    @SuppressWarnings("unused")
     public ErrorResponse returnError() {
         var res = _execute();
 
@@ -188,14 +204,16 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
             return jsonMapper.readValue(resString, ErrorResponse.class);
         } catch (JacksonException e) {
             log.error("Failed to read response as JSON.", e);
-            throw new RuntimeException(e);
+            throw new ResponseBodyException(e);
         }
     }
 
+    @SuppressWarnings("unused")
     public ResultActions returnRaw() {
         return _execute();
     }
 
+    @SuppressWarnings("unused")
     public void execute() {
         _execute();
     }
@@ -204,12 +222,12 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
     private ResultActions _execute() {
         var requestBuilder = prepareRequestBuilder();
 
-        ResultActions resultActions = null;
+        ResultActions resultActions;
         try {
             resultActions = mockMvc.perform(requestBuilder);
         } catch (Exception e) {
             log.error("Request execution failed.", e);
-            throw new RuntimeException(e);
+            throw new RequestExecutionException(e);
         }
 
         maybeCheckStatus(resultActions);
@@ -217,8 +235,6 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
         return resultActions;
     }
 
-    @NonNull
-    @SuppressWarnings("unchecked")
     protected R prepareRequestBuilder() {
         var requestBuilder = getRequestBuilder(url)
                 .content(body)
@@ -249,15 +265,14 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
             requestBuilder.param(entry.getKey(), entry.getValue());
         }
 
-        return (R) requestBuilder;
+        return requestBuilder;
     }
 
-    @NonNull
-    protected abstract R getRequestBuilder(@NonNull UrlWithVariables url);
+    protected abstract R getRequestBuilder(UrlWithVariables url);
 
     protected abstract boolean useCsrf();
 
-    protected void maybeCheckStatus(@NonNull ResultActions resultActions) {
+    protected void maybeCheckStatus(ResultActions resultActions) {
         var mvcResult = resultActions.andReturn();
         if (status != null) {
             assertThat(
@@ -269,6 +284,24 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
                             mvcResult.getResponse().getStatus()
                     )
                     .isEqualTo(status.value());
+        }
+    }
+
+    public static class RequestBodyException extends RuntimeException {
+        public RequestBodyException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    public static class ResponseBodyException extends RuntimeException {
+        public ResponseBodyException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    public static class RequestExecutionException extends RuntimeException {
+        public RequestExecutionException(Throwable cause) {
+            super(cause);
         }
     }
 }

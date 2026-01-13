@@ -1,32 +1,36 @@
 package it.aboutbits.springboot.testing.web.request;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.mock.web.MockMultipartFile;
 
 import static it.aboutbits.springboot.testing.web.request.RequestSecurityAssert.assertThatRequest;
 
 @Getter
 @RequiredArgsConstructor
+@NullMarked
 public class HttpTestSecurity {
     private final HttpTestClient httpTestClient;
 
-    public void assertGetGranted(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertGetGranted(String url, Object... pathVariables) {
         var result = httpTestClient.get(url, pathVariables)
                 .returnRaw();
 
         assertThatRequest(result).wasGranted();
     }
 
-    public void assertGetDenied(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertGetDenied(String url, Object... pathVariables) {
         var result = httpTestClient.get(url, pathVariables)
                 .returnRaw();
 
         assertThatRequest(result).wasDenied();
     }
 
-    public void assertPostGranted(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertPostGranted(String url, Object... pathVariables) {
         var result = httpTestClient.post(url, pathVariables)
                 .body("{}")
                 .returnRaw();
@@ -34,7 +38,8 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasGranted();
     }
 
-    public void assertPostDenied(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertPostDenied(String url, Object... pathVariables) {
         var result = httpTestClient.post(url, pathVariables)
                 .body("{}")
                 .returnRaw();
@@ -42,9 +47,10 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasDenied();
     }
 
+    @SuppressWarnings("unused")
     public void assertPostMultipartGranted(
-            @NonNull String url,
-            @NonNull MockMultipartFile multipartFile,
+            String url,
+            MockMultipartFile multipartFile,
             Object... pathVariables
     ) {
         var result = httpTestClient.postMultipart(url, pathVariables)
@@ -54,9 +60,10 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasGranted();
     }
 
+    @SuppressWarnings("unused")
     public void assertPostMultipartDenied(
-            @NonNull String url,
-            @NonNull MockMultipartFile multipartFile,
+            String url,
+            MockMultipartFile multipartFile,
             Object... pathVariables
     ) {
         var result = httpTestClient.postMultipart(url, pathVariables)
@@ -66,7 +73,8 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasDenied();
     }
 
-    public void assertPutGranted(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertPutGranted(String url, Object... pathVariables) {
         var result = httpTestClient.put(url, pathVariables)
                 .body("{}")
                 .returnRaw();
@@ -74,7 +82,8 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasGranted();
     }
 
-    public void assertPutDenied(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertPutDenied(String url, Object... pathVariables) {
         var result = httpTestClient.put(url, pathVariables)
                 .body("{}")
                 .returnRaw();
@@ -82,9 +91,10 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasDenied();
     }
 
+    @SuppressWarnings("unused")
     public void assertPutMultipartGranted(
-            @NonNull String url,
-            @NonNull MockMultipartFile multipartFile,
+            String url,
+            MockMultipartFile multipartFile,
             Object... pathVariables
     ) {
         var result = httpTestClient.putMultipart(url, pathVariables)
@@ -94,9 +104,10 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasGranted();
     }
 
+    @SuppressWarnings("unused")
     public void assertPutMultipartDenied(
-            @NonNull String url,
-            @NonNull MockMultipartFile multipartFile,
+            String url,
+            MockMultipartFile multipartFile,
             Object... pathVariables
     ) {
         var result = httpTestClient.putMultipart(url, pathVariables)
@@ -106,7 +117,8 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasDenied();
     }
 
-    public void assertPatchGranted(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertPatchGranted(String url, Object... pathVariables) {
         var result = httpTestClient.patch(url, pathVariables)
                 .body("{}")
                 .returnRaw();
@@ -114,7 +126,8 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasGranted();
     }
 
-    public void assertPatchDenied(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertPatchDenied(String url, Object... pathVariables) {
         var result = httpTestClient.patch(url, pathVariables)
                 .body("{}")
                 .returnRaw();
@@ -122,9 +135,10 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasDenied();
     }
 
+    @SuppressWarnings("unused")
     public void assertPatchMultipartGranted(
-            @NonNull String url,
-            @NonNull MockMultipartFile multipartFile,
+            String url,
+            MockMultipartFile multipartFile,
             Object... pathVariables
     ) {
         var result = httpTestClient.patchMultipart(url, pathVariables)
@@ -134,9 +148,10 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasGranted();
     }
 
+    @SuppressWarnings("unused")
     public void assertPatchMultipartDenied(
-            @NonNull String url,
-            @NonNull MockMultipartFile multipartFile,
+            String url,
+            MockMultipartFile multipartFile,
             Object... pathVariables
     ) {
         var result = httpTestClient.patchMultipart(url, pathVariables)
@@ -146,7 +161,8 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasDenied();
     }
 
-    public void assertDeleteGranted(@NonNull String url, Object... pathVariables) {
+    @SuppressWarnings("unused")
+    public void assertDeleteGranted(String url, Object... pathVariables) {
         var result = httpTestClient.delete(url, pathVariables)
                 .body("{}")
                 .returnRaw();
@@ -154,7 +170,7 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasGranted();
     }
 
-    public void assertDeleteDenied(@NonNull String url, Object... pathVariables) {
+    public void assertDeleteDenied(String url, Object... pathVariables) {
         var result = httpTestClient.delete(url, pathVariables)
                 .body("{}")
                 .returnRaw();

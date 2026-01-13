@@ -6,12 +6,13 @@ import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
 import it.aboutbits.springboot.testing.validation.source.SizeGreaterThanValueSource;
 import it.aboutbits.springboot.testing.validation.source.SizeLessThanValueSource;
 import lombok.AccessLevel;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
 
 @SuppressWarnings("unchecked")
+@NullMarked
 public interface SizeRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
-    default Builder<V> size(@NonNull String property) {
+    default Builder<V> size(String property) {
         return new Builder<>((V) this, property);
     }
 

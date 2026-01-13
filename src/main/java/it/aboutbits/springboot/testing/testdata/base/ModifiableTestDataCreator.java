@@ -1,7 +1,7 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,26 +10,30 @@ import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
 import java.util.function.UnaryOperator;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"java:S119"})
 @Slf4j
+@NullMarked
 public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDataCreator<CREATOR, ITEM, PARAMETER>, ITEM, PARAMETER> extends TestDataCreator<ITEM> {
+    @SuppressWarnings("unused")
     protected static final FakerExtended FAKER = new FakerExtended();
 
     private boolean mutatorSet = false;
     private boolean mutatorCalled = false;
 
-    protected BiFunction<PARAMETER, Integer, PARAMETER> parameterMutator = (parameter, index) -> {
+    protected BiFunction<PARAMETER, Integer, PARAMETER> parameterMutator = (parameter, _) -> {
         mutatorCalled = true;
         return parameter;
     };
-    protected ObjIntConsumer<ITEM> resultMutator = (item, index) -> {
+
+    protected ObjIntConsumer<ITEM> resultMutator = (_, _) -> {
     };
 
     protected ModifiableTestDataCreator(int count) {
         super(count);
     }
 
-    public CREATOR modifyParameter(@NonNull BiFunction<PARAMETER, Integer, PARAMETER> parameterMutator) {
+    @SuppressWarnings({"unchecked", "unused"})
+    public CREATOR modifyParameter(BiFunction<PARAMETER, Integer, PARAMETER> parameterMutator) {
         this.parameterMutator = (parameter, index) -> {
             mutatorCalled = true;
             return parameterMutator.apply(parameter, index);
@@ -38,7 +42,8 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
         return (CREATOR) this;
     }
 
-    public CREATOR modifyParameter(@NonNull UnaryOperator<PARAMETER> parameterMutator) {
+    @SuppressWarnings({"unchecked", "unused"})
+    public CREATOR modifyParameter(UnaryOperator<PARAMETER> parameterMutator) {
         this.parameterMutator = (parameter, index) -> {
             mutatorCalled = true;
             return parameterMutator.apply(parameter);
@@ -47,12 +52,14 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
         return (CREATOR) this;
     }
 
-    public CREATOR modifyResult(@NonNull ObjIntConsumer<ITEM> resultMutator) {
+    @SuppressWarnings({"unchecked", "unused"})
+    public CREATOR modifyResult(ObjIntConsumer<ITEM> resultMutator) {
         this.resultMutator = resultMutator;
         return (CREATOR) this;
     }
 
-    public CREATOR modifyResult(@NonNull Consumer<ITEM> resultMutator) {
+    @SuppressWarnings({"unchecked", "unused"})
+    public CREATOR modifyResult(Consumer<ITEM> resultMutator) {
         this.resultMutator = (item, index) -> resultMutator.accept(item);
         return (CREATOR) this;
     }
@@ -79,5 +86,5 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
         return result;
     }
 
-    protected abstract ITEM saveMutation(@NonNull ITEM item);
+    protected abstract ITEM saveMutation(ITEM item);
 }

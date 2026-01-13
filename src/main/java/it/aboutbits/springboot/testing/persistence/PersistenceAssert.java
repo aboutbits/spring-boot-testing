@@ -6,8 +6,8 @@ import it.aboutbits.springboot.toolbox.type.identity.EntityId;
 import it.aboutbits.springboot.toolbox.type.identity.Identified;
 import jakarta.persistence.EntityManager;
 import lombok.AccessLevel;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import static it.aboutbits.springboot.toolbox.util.CollectUtil.collectToSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
 public final class PersistenceAssert {
     private PersistenceAssert() {
     }
@@ -28,44 +29,32 @@ public final class PersistenceAssert {
 
     @SuppressWarnings("unused")
     public static <ID extends EntityId<?>, E extends Identified<ID> & ChangeAware, M extends Identified<ID> & ChangeAware> WriteOperationAsserter<ID, E, M> assertThatEntity(
-            @NonNull E before,
-            @NonNull Class<M> modelClass
+            E before,
+            Class<M> modelClass
     ) {
         return new WriteOperationAsserter<>(getEntityManager(), List.of(before), modelClass);
     }
 
     @SuppressWarnings("unused")
     public static <ID extends EntityId<?>, E extends Identified<ID> & ChangeAware, M extends Identified<ID> & ChangeAware> WriteOperationAsserter<ID, E, M> assertThatEntity(
-            @NonNull Collection<E> before,
-            @NonNull Class<M> modelClass
+            Collection<E> before,
+            Class<M> modelClass
     ) {
         return new WriteOperationAsserter<>(getEntityManager(), before, modelClass);
     }
 
-    /**
-     * @deprecated Use {@link #assertThatEntityId(EntityId, Class)} instead.
-     */
-    @Deprecated
     @SuppressWarnings("unused")
-    public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntity(
-            @NonNull ID id,
-            @NonNull Class<M> modelClass
+    public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntityId(
+            ID id,
+            Class<M> modelClass
     ) {
         return new WriteOperationIdAsserter<>(getEntityManager(), List.of(id), modelClass);
     }
 
     @SuppressWarnings("unused")
     public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntityId(
-            @NonNull ID id,
-            @NonNull Class<M> modelClass
-    ) {
-        return new WriteOperationIdAsserter<>(getEntityManager(), List.of(id), modelClass);
-    }
-
-    @SuppressWarnings("unused")
-    public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntityId(
-            @NonNull Collection<ID> id,
-            @NonNull Class<M> modelClass
+            Collection<ID> id,
+            Class<M> modelClass
     ) {
         return new WriteOperationIdAsserter<>(getEntityManager(), id, modelClass);
     }
@@ -154,6 +143,8 @@ public final class PersistenceAssert {
 
             for (var savedInstance : savedInstances) {
                 var originalEntity = originalByIdMap.get(savedInstance.getId());
+                Objects.requireNonNull(originalEntity);
+
                 assertThat(originalEntity).isNotNull();
 
                 assertThat(
@@ -177,6 +168,7 @@ public final class PersistenceAssert {
 
             for (var savedInstance : savedInstances) {
                 var originalEntity = originalByIdMap.get(savedInstance.getId());
+                Objects.requireNonNull(originalEntity);
 
                 assertThat(savedInstance).isNotNull();
                 assertThat(originalEntity).isNotNull();
