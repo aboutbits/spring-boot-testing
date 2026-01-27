@@ -4,6 +4,7 @@ import it.aboutbits.archunit.toolbox.support.ArchIgnoreNoProductionCounterpart;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.BaseValidationAssert;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
+import it.aboutbits.springboot.toolbox.validation.annotation.ValidPassword;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Max;
@@ -183,6 +184,10 @@ class ValidationAssertTest {
             // Nullable
             @Nullable Object nullable,
 
+            // ValidPassword
+            @ValidPassword
+            String password,
+
             // Not validated
             Object notValidated
     ) {
@@ -325,6 +330,9 @@ class ValidationAssertTest {
                 // Nullable
                 .nullable("nullable")
 
+                // ValidPassword
+                .validPassword("password", 8, 50)
+
                 // Not validated
                 .notValidated("notValidated")
                 .isCompliant();
@@ -464,6 +472,9 @@ class ValidationAssertTest {
 
                         // Nullable
                         .nullable("nullable")
+
+                        // ValidPassword
+                        .validPassword("password", 8, 50)
 
                         // Not validated
                         .notValidated("notValidated")
@@ -605,6 +616,9 @@ class ValidationAssertTest {
 
                         // Nullable
                         .nullable("nullable")
+
+                        // ValidPassword
+                        .validPassword("password", 8, 50)
 
                         // Not validated
                         .notValidated("notValidated")
@@ -904,6 +918,9 @@ class ValidationAssertTest {
 
                 // Nullable
                 null,
+
+                // ValidPassword
+                "password123",
 
                 // Not validated
                 null

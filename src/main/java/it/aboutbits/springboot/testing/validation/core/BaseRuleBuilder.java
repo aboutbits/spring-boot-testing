@@ -14,8 +14,12 @@ import it.aboutbits.springboot.testing.validation.rule.NullableRule;
 import it.aboutbits.springboot.testing.validation.rule.PastRule;
 import it.aboutbits.springboot.testing.validation.rule.PositiveOrZeroRule;
 import it.aboutbits.springboot.testing.validation.rule.PositiveRule;
+import it.aboutbits.springboot.testing.validation.rule.RepeatedFieldRule;
 import it.aboutbits.springboot.testing.validation.rule.SizeRule;
 import it.aboutbits.springboot.testing.validation.rule.ValidBeanRule;
+import it.aboutbits.springboot.testing.validation.rule.ValidDateRangeRule;
+import it.aboutbits.springboot.testing.validation.rule.ValidNumericRangeRule;
+import it.aboutbits.springboot.testing.validation.rule.ValidPasswordRule;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,13 +43,17 @@ public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<R>> implements
         NotBlankRule<R>,
         NotEmptyRule<R>,
         NotNullRule<R>,
+        NotValidatedRule<R>,
         NullableRule<R>,
         PastRule<R>,
         PositiveOrZeroRule<R>,
         PositiveRule<R>,
-        NotValidatedRule<R>,
+        RepeatedFieldRule<R>,
         SizeRule<R>,
-        ValidBeanRule<R> {
+        ValidBeanRule<R>,
+        ValidDateRangeRule<R>,
+        ValidNumericRangeRule<R>,
+        ValidPasswordRule<R> {
     @Getter(AccessLevel.PACKAGE)
     private final List<Rule> rules = new ArrayList<>();
 
