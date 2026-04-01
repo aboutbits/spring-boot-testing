@@ -184,7 +184,7 @@ class ValidationAssertTest {
             // Nullable
             @Nullable Object nullable,
 
-            //
+            // ValidPassword
             @ValidPassword
             String password,
 
