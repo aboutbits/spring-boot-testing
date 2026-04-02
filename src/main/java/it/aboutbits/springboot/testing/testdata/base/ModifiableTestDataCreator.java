@@ -2,6 +2,7 @@ package it.aboutbits.springboot.testing.testdata.base;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +15,6 @@ import java.util.function.UnaryOperator;
 @Slf4j
 @NullMarked
 public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDataCreator<CREATOR, ITEM, PARAMETER>, ITEM, PARAMETER> extends TestDataCreator<ITEM> {
-    @SuppressWarnings("unused")
-    protected static final FakerExtended FAKER = new FakerExtended();
-
     private boolean mutatorSet = false;
     private boolean mutatorCalled = false;
 
@@ -25,8 +23,8 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
         return parameter;
     };
 
-    protected ObjIntConsumer<ITEM> resultMutator = (_, _) -> {
-    };
+    @Nullable
+    protected ObjIntConsumer<ITEM> resultMutator = null;
 
     protected ModifiableTestDataCreator(int count) {
         super(count);
@@ -71,11 +69,15 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
         for (var index = 0; index < numberOfItems; index++) {
             var item = create(index);
 
-            resultMutator.accept(item, index);
+            if (resultMutator != null) {
+                resultMutator.accept(item, index);
 
-            result.add(
-                    saveMutation(item)
-            );
+                result.add(
+                        saveMutation(item)
+                );
+            } else {
+                result.add(item);
+            }
         }
 
         if (mutatorSet && !mutatorCalled) {
