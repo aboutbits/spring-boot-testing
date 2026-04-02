@@ -1,4 +1,4 @@
-package it.aboutbits.springboot.testing.testdata.base;
+package it.aboutbits.springboot.testing.testdata;
 
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import it.aboutbits.springboot.toolbox.type.identity.EntityId;
@@ -13,10 +13,6 @@ import java.util.Random;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 
-/**
- * @deprecated Moved. Use {@link it.aboutbits.springboot.testing.testdata.FakerExtended} instead. This class will be removed in a future release.
- */
-@Deprecated(forRemoval = true)
 @NullMarked
 public class FakerExtended extends Faker {
     public FakerExtended() {

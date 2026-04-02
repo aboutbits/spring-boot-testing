@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
+import it.aboutbits.springboot.testing.testdata.FakerExtended;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
