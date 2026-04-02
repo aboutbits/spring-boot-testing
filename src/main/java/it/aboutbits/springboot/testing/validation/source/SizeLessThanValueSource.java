@@ -2,6 +2,7 @@ package it.aboutbits.springboot.testing.validation.source;
 
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class SizeLessThanValueSource implements ValueSource {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> Stream<T> values(Class<T> propertyClass, Object... args) {
+    public <T> Stream<@Nullable T> values(Class<T> propertyClass, Object... args) {
         var value = (Long.valueOf((long) args[0]));
 
         if (value == 0) {
@@ -65,12 +66,12 @@ public class SizeLessThanValueSource implements ValueSource {
         }
 
         if (propertyClass.isArray()) {
-            return (Stream<T>) arrayFunction(propertyClass, value);
+            return (Stream<@Nullable T>) arrayFunction(propertyClass, value);
         }
 
         var sourceFunction = TYPE_SOURCES.get(propertyClass);
         if (sourceFunction != null) {
-            return (Stream<T>) sourceFunction.apply(value);
+            return (Stream<@Nullable T>) sourceFunction.apply(value);
         }
 
         throw new IllegalArgumentException("Property class not supported!");

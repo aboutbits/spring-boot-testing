@@ -3,6 +3,7 @@ package it.aboutbits.springboot.testing.validation.source;
 import it.aboutbits.springboot.testing.validation.core.ValueSource;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -48,10 +49,10 @@ public class BiggerThanValueSource implements ValueSource {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> Stream<T> values(Class<T> propertyClass, Object... args) {
+    public <T> Stream<@Nullable T> values(Class<T> propertyClass, Object... args) {
         var sourceFunction = TYPE_SOURCES.get(propertyClass);
         if (sourceFunction != null) {
-            return (Stream<T>) sourceFunction.apply(args);
+            return (Stream<@Nullable T>) sourceFunction.apply(args);
         }
 
         throw new IllegalArgumentException("Property class not supported!");
