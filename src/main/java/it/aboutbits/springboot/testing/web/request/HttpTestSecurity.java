@@ -170,6 +170,7 @@ public class HttpTestSecurity {
         assertThatRequest(result).wasGranted();
     }
 
+    @SuppressWarnings("unused")
     public void assertDeleteDenied(String url, Object... pathVariables) {
         var result = httpTestClient.delete(url, pathVariables)
                 .body("{}")

@@ -109,7 +109,7 @@ void testValidation() {
 }
 ```
 
-Alternatively you can use a method call to a service function to verify the validation. This is the preferred way as it makes sure that the bean validation is both triggered and also valid.
+Alternatively, you can use a method call to a service function to verify the validation. This is the preferred way as it makes sure that the bean validation is both triggered and also valid.
 
 ```java
 import org.springframework.beans.factory.annotation.Autowired;
