@@ -195,6 +195,21 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
+    public <T> T returnCustom(Class<T> clazz) {
+        var res = _execute();
+
+        var resString = res.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        try {
+            return jsonMapper.readValue(resString, clazz);
+        } catch (JacksonException e) {
+            log.error("Failed to read response as JSON.", e);
+            throw new ResponseBodyException(e);
+        }
+    }
+
+    @SneakyThrows(UnsupportedEncodingException.class)
+    @SuppressWarnings("unused")
     public ErrorResponse returnError() {
         var res = _execute();
 
