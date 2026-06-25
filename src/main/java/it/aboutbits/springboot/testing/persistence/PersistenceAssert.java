@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.persistence;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.testing.spring.BeanAccessor;
 import it.aboutbits.springboot.toolbox.persistence.ChangeAware;
 import it.aboutbits.springboot.toolbox.type.identity.EntityId;
@@ -28,6 +29,7 @@ public final class PersistenceAssert {
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public static <ID extends EntityId<?>, E extends Identified<ID> & ChangeAware, M extends Identified<ID> & ChangeAware> WriteOperationAsserter<ID, E, M> assertThatEntity(
             E before,
             Class<M> modelClass
@@ -36,6 +38,7 @@ public final class PersistenceAssert {
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public static <ID extends EntityId<?>, E extends Identified<ID> & ChangeAware, M extends Identified<ID> & ChangeAware> WriteOperationAsserter<ID, E, M> assertThatEntity(
             Collection<E> before,
             Class<M> modelClass
@@ -44,6 +47,7 @@ public final class PersistenceAssert {
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntityId(
             ID id,
             Class<M> modelClass
@@ -52,6 +56,7 @@ public final class PersistenceAssert {
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public static <ID extends EntityId<?>, M extends Identified<ID>> WriteOperationIdAsserter<ID, M> assertThatEntityId(
             Collection<ID> id,
             Class<M> modelClass

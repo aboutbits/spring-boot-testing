@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.web.request;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import org.assertj.core.api.AbstractAssert;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ public final class RequestSecurityAssert extends AbstractAssert<RequestSecurityA
         super(actual, RequestSecurityAssert.class);
     }
 
+    @CheckReturnValue
     public static RequestSecurityAssert assertThatRequest(ResultActions actual) {
         return new RequestSecurityAssert(actual);
     }

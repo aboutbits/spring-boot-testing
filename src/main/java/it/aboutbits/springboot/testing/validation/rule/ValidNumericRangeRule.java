@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.validation.rule;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.CustomValidationFunction;
 import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 @SuppressWarnings("unchecked")
 @NullMarked
 public interface ValidNumericRangeRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
+    @CheckReturnValue
     default V validNumericRange(String lowerBoundField, String upperBoundField) {
         addValidationFunction(
                 (Object o) -> {
@@ -44,6 +46,7 @@ public interface ValidNumericRangeRule<V extends BaseRuleBuilder<?>> extends Val
         return (V) this;
     }
 
+    @CheckReturnValue
     default V validNumericRange(
             String lowerBoundField,
             String upperBoundField,

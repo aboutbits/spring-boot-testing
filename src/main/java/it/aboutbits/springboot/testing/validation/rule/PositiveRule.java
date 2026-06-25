@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.validation.rule;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.Rule;
 import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
@@ -10,6 +11,7 @@ import org.jspecify.annotations.NullMarked;
 @SuppressWarnings("unchecked")
 @NullMarked
 public interface PositiveRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
+    @CheckReturnValue
     default V positive(String property) {
         addRule(
                 new Rule(property, LessThanValueSource.class, 0L)

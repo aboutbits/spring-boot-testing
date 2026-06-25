@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.web.request;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.toolbox.web.response.ErrorResponse;
 import it.aboutbits.springboot.toolbox.web.response.ItemResponse;
 import it.aboutbits.springboot.toolbox.web.response.ItemResponseWithMeta;
@@ -68,12 +69,14 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public Request<R> cookies(Cookie... cookies) {
         this.cookies = cookies;
         return this;
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public Request<R> body(Object body) {
         if (body instanceof String stringBody) {
             this.body = stringBody;
@@ -90,12 +93,14 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public Request<R> param(String name, @Nullable Object value) {
         this.parameters.put(name, String.valueOf(value));
         return this;
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public Request<R> param(String name, Collection<?> values) {
         this.parametersArray.put(
                 name,
@@ -107,12 +112,14 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public Request<R> expectStatus(HttpStatus status) {
         this.status = status;
         return this;
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public Request<R> basicAuth(String username, String password) {
         this.basicAuth = new UsernameAndPassword(username, password);
         return this;
@@ -120,6 +127,7 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public <T> ItemResponse<T> returnItem(Class<T> clazz) {
         var res = _execute();
 
@@ -138,6 +146,7 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public <T, M extends Meta> ItemResponseWithMeta<T, M> returnItem(
             Class<T> clazz,
             Class<M> metaClass
@@ -159,6 +168,7 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public <T> ListResponse<T> returnList(Class<T> clazz) {
         var res = _execute();
 
@@ -177,6 +187,7 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public <T> PagedResponse<T> returnPage(Class<T> clazz) {
         var res = _execute();
 
@@ -195,6 +206,7 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public <T> T returnCustom(Class<T> clazz) {
         var res = _execute();
 
@@ -210,6 +222,7 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public ErrorResponse returnError() {
         var res = _execute();
 
@@ -224,6 +237,7 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public ResultActions returnRaw() {
         return _execute();
     }

@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.Comparator;
@@ -24,6 +25,7 @@ public abstract class AllTestDataReader<ITEM> {
 
     @SafeVarargs
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public final List<ITEM> returnSorted(Comparator<ITEM>... comparators) {
         if (comparators.length == 0) {
             throw new IllegalArgumentException("At least one comparator must be provided");
@@ -39,6 +41,7 @@ public abstract class AllTestDataReader<ITEM> {
 
     @SafeVarargs
     @SuppressWarnings({"unchecked", "unused"})
+    @CheckReturnValue
     public final <U extends Comparable<? super U>> List<ITEM> returnSorted(Function<ITEM, ? extends Comparable<?>>... comparators) {
         if (comparators.length == 0) {
             throw new IllegalArgumentException("At least one comparator must be provided");
@@ -53,6 +56,7 @@ public abstract class AllTestDataReader<ITEM> {
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public <U extends Comparable<? super U>> AllAndFiltered<ITEM> returnFiltered(Predicate<ITEM> predicate) {
         var all = this.returnAll();
         return new AllAndFiltered<>(
@@ -63,6 +67,7 @@ public abstract class AllTestDataReader<ITEM> {
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public Set<ITEM> returnSet() {
         return new HashSet<>(this.returnAll());
     }

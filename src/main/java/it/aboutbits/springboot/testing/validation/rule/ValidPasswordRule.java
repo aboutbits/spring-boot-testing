@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.validation.rule;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.Rule;
 import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
@@ -10,6 +11,7 @@ import org.jspecify.annotations.NullMarked;
 @SuppressWarnings("unchecked")
 @NullMarked
 public interface ValidPasswordRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
+    @CheckReturnValue
     default V validPassword(String property, long minLength, long maxLength) {
         addRule(
                 new Rule(property, LongerThanValueSource.class, maxLength)
