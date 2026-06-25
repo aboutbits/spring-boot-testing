@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.validation.rule;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.Rule;
 import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
@@ -12,6 +13,7 @@ import org.jspecify.annotations.NullMarked;
 @SuppressWarnings("unchecked")
 @NullMarked
 public interface SizeRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
+    @CheckReturnValue
     default Builder<V> size(String property) {
         return new Builder<>((V) this, property);
     }
@@ -21,6 +23,7 @@ public interface SizeRule<V extends BaseRuleBuilder<?>> extends ValidationRulesD
         private final V parent;
         private final String property;
 
+        @CheckReturnValue
         public V min(long minSize) {
             parent.addRule(
                     new Rule(property, SizeLessThanValueSource.class, minSize)
@@ -28,6 +31,7 @@ public interface SizeRule<V extends BaseRuleBuilder<?>> extends ValidationRulesD
             return parent;
         }
 
+        @CheckReturnValue
         public V max(long maxSize) {
             parent.addRule(
                     new Rule(property, SizeGreaterThanValueSource.class, maxSize)
@@ -35,6 +39,7 @@ public interface SizeRule<V extends BaseRuleBuilder<?>> extends ValidationRulesD
             return parent;
         }
 
+        @CheckReturnValue
         public V minMax(long minSize, long maxSize) {
             parent.addRule(
                     new Rule(property, SizeLessThanValueSource.class, minSize)

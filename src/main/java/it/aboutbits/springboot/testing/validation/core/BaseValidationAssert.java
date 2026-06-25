@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.validation.core;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.toolbox.type.CustomType;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -49,6 +50,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         NON_BEAN_TYPES.add(type);
     }
 
+    @CheckReturnValue
     public <P> CallBuilder<R, P> of(P parameterUnderTest) {
         this.parameterUnderTest = parameterUnderTest;
         ruleBuilder.setTriggerValidation(this::assertValidation);
@@ -56,6 +58,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public AnnotationChecker calling(
             Class<?> classUnderTest,
             String methodName,
@@ -97,17 +100,20 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         private final BaseValidationAssert<R> parent;
 
         @SuppressWarnings("unused")
+        @CheckReturnValue
         public R calling(Consumer<P> functionToCallWithParameter) {
             parent.setFunctionToCallWithParameter(functionToCallWithParameter);
             return parent.ruleBuilder;
         }
 
         @SuppressWarnings("unused")
+        @CheckReturnValue
         public R usingBeanValidation() {
             return parent.ruleBuilder;
         }
 
         @SuppressWarnings({"unused", "unchecked"})
+        @CheckReturnValue
         public <ID> R calling(
                 BiConsumer<ID, P> functionToCallWithParameter,
                 ID id
@@ -119,6 +125,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         }
 
         @SuppressWarnings({"unused", "unchecked"})
+        @CheckReturnValue
         public <A, B> R calling(
                 TriConsumer<A, B, P> functionToCallWithParameter,
                 A a,

@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.web.request;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
@@ -27,12 +28,14 @@ public abstract class MultipartRequest extends Request<MockMultipartHttpServletR
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public MultipartRequest part(MockPart part) {
         parts.add(part);
         return this;
     }
 
     @SuppressWarnings("unused")
+    @CheckReturnValue
     public MultipartRequest file(MockMultipartFile file) {
         files.add(file);
         return this;

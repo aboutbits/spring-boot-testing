@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.validation.rule;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.CustomValidationFunction;
 import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 @SuppressWarnings("unchecked")
 @NullMarked
 public interface ValidDateRangeRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
+    @CheckReturnValue
     default V validDateRange(String fromDateField, String toDateField) {
         addValidationFunction(
                 (Object o) -> {
@@ -44,6 +46,7 @@ public interface ValidDateRangeRule<V extends BaseRuleBuilder<?>> extends Valida
         return (V) this;
     }
 
+    @CheckReturnValue
     default V validDateRange(
             String fromDateField,
             String toDateField,

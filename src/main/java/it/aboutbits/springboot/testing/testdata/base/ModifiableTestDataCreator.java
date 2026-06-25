@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -31,6 +32,7 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
     }
 
     @SuppressWarnings({"unchecked", "unused"})
+    @CheckReturnValue
     public CREATOR modifyParameter(BiFunction<PARAMETER, Integer, PARAMETER> parameterMutator) {
         this.parameterMutator = (parameter, index) -> {
             mutatorCalled = true;
@@ -41,6 +43,7 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
     }
 
     @SuppressWarnings({"unchecked", "unused"})
+    @CheckReturnValue
     public CREATOR modifyParameter(UnaryOperator<PARAMETER> parameterMutator) {
         this.parameterMutator = (parameter, index) -> {
             mutatorCalled = true;
@@ -51,12 +54,14 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
     }
 
     @SuppressWarnings({"unchecked", "unused"})
+    @CheckReturnValue
     public CREATOR modifyResult(ObjIntConsumer<ITEM> resultMutator) {
         this.resultMutator = resultMutator;
         return (CREATOR) this;
     }
 
     @SuppressWarnings({"unchecked", "unused"})
+    @CheckReturnValue
     public CREATOR modifyResult(Consumer<ITEM> resultMutator) {
         this.resultMutator = (item, index) -> resultMutator.accept(item);
         return (CREATOR) this;

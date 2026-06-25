@@ -1,5 +1,6 @@
 package it.aboutbits.springboot.testing.validation.rule;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.CustomValidationFunction;
 import it.aboutbits.springboot.testing.validation.core.ValidationRulesData;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 @SuppressWarnings("unchecked")
 @NullMarked
 public interface RepeatedFieldRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
+    @CheckReturnValue
     default V repeatedField(String originalField, String repeatedField) {
         addValidationFunction(
                 (Object o) -> {
