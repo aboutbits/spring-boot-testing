@@ -1,6 +1,5 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
-import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.testing.testdata.FakerExtended;
 import org.jspecify.annotations.NullMarked;
 
