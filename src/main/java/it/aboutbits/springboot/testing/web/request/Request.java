@@ -127,7 +127,6 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public <T> ItemResponse<T> returnItem(Class<T> clazz) {
         var res = _execute();
 
@@ -146,7 +145,6 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public <T, M extends Meta> ItemResponseWithMeta<T, M> returnItem(
             Class<T> clazz,
             Class<M> metaClass
@@ -168,7 +166,6 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public <T> ListResponse<T> returnList(Class<T> clazz) {
         var res = _execute();
 
@@ -187,7 +184,6 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public <T> PagedResponse<T> returnPage(Class<T> clazz) {
         var res = _execute();
 
@@ -206,7 +202,6 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public <T> T returnCustom(Class<T> clazz) {
         var res = _execute();
 
@@ -222,7 +217,6 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
 
     @SneakyThrows(UnsupportedEncodingException.class)
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public ErrorResponse returnError() {
         var res = _execute();
 
@@ -237,7 +231,6 @@ public abstract class Request<R extends AbstractMockHttpServletRequestBuilder<R>
     }
 
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public ResultActions returnRaw() {
         return _execute();
     }

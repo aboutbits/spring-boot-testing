@@ -29,20 +29,17 @@ public abstract class TestDataCreator<ITEM> {
     }
 
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public ITEM returnFirst() {
         return create().getFirst();
     }
 
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public List<ITEM> returnAll() {
         return create();
     }
 
     @SafeVarargs
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public final List<ITEM> returnSorted(Comparator<ITEM>... comparators) {
         if (comparators.length == 0) {
             throw new IllegalArgumentException("At least one comparator must be provided");
@@ -58,7 +55,6 @@ public abstract class TestDataCreator<ITEM> {
 
     @SafeVarargs
     @SuppressWarnings({"unchecked", "unused"})
-    @CheckReturnValue
     public final <U extends Comparable<? super U>> List<ITEM> returnSorted(Function<ITEM, ? extends Comparable<?>>... comparators) {
         if (comparators.length == 0) {
             throw new IllegalArgumentException("At least one comparator must be provided");
@@ -73,7 +69,6 @@ public abstract class TestDataCreator<ITEM> {
     }
 
     @SuppressWarnings("unused")
-    @CheckReturnValue
     public Set<ITEM> returnSet() {
         return new HashSet<>(create());
     }
