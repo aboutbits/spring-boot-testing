@@ -1,6 +1,7 @@
 package it.aboutbits.springboot.testing.web.response;
 
 import com.jayway.jsonpath.JsonPath;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.test.web.servlet.ResultMatcher;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -15,8 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
 
+@NullMarked
 public final class ResponseBodyMatchers {
-    private static final JsonMapper jsonMapper = new JsonMapper();
+    private static final JsonMapper JSON_MAPPER = new JsonMapper();
     private final String jsonPath;
 
     private String[] fieldNamesToIgnore = new String[0];
@@ -50,7 +52,7 @@ public final class ResponseBodyMatchers {
             try {
                 var json = mvcResult.getResponse().getContentAsString();
                 var extractedValue = JsonPath.read(json, jsonPath);
-                T actualObject = jsonMapper.readValue(jsonMapper.writeValueAsString(extractedValue), targetClass);
+                T actualObject = JSON_MAPPER.readValue(JSON_MAPPER.writeValueAsString(extractedValue), targetClass);
 
                 var ignoredFields = new ArrayList<>(Arrays.asList(fieldNamesToIgnore));
                 ignoredFields.addAll(Arrays.asList(optionalFieldNamesToIgnore));
