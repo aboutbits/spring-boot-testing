@@ -16,8 +16,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
 
 public final class ResponseBodyMatchers {
-    public static JsonMapper jsonMapper = new JsonMapper();
+    private final static JsonMapper jsonMapper = new JsonMapper();
     private final String jsonPath;
+
     private String[] fieldNamesToIgnore = new String[0];
     private String[] optionalFieldNamesToIgnore = new String[0];
     private boolean ignoreAudition = false;
