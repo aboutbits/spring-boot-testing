@@ -23,7 +23,7 @@ public final class ResponseBodyMatchers {
 
     private String[] fieldNamesToIgnore = new String[0];
     private String[] optionalFieldNamesToIgnore = new String[0];
-    private boolean ignoreAudition = false;
+    private boolean ignoreAuditFields = false;
 
     private ResponseBodyMatchers(String jsonPath) {
         this.jsonPath = jsonPath;
@@ -48,7 +48,7 @@ public final class ResponseBodyMatchers {
     }
 
     public ResponseBodyMatchers ignoringAuditFields() {
-        this.ignoreAudition = true;
+        this.ignoreAuditFields = true;
         return this;
     }
 
@@ -64,7 +64,7 @@ public final class ResponseBodyMatchers {
 
                 var ignoredFields = new ArrayList<>(Arrays.asList(fieldNamesToIgnore));
                 ignoredFields.addAll(Arrays.asList(optionalFieldNamesToIgnore));
-                if (ignoreAudition) {
+                if (ignoreAuditFields) {
                     ignoredFields.addAll(Arrays.asList("createdAt", "createdBy", "updatedAt", "updatedBy"));
                 }
 
