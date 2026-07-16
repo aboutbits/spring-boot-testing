@@ -29,6 +29,14 @@ public final class ResponseBodyMatchers {
         this.jsonPath = jsonPath;
     }
 
+    public static ResponseBodyMatchers responseBody() {
+        return new ResponseBodyMatchers("$");
+    }
+
+    public static ResponseBodyMatchers responseBodyAt(String expression) {
+        return new ResponseBodyMatchers(expression);
+    }
+
     public ResponseBodyMatchers ignoringOptionalFields(String... optionalFieldNamesToIgnore) {
         this.optionalFieldNamesToIgnore = optionalFieldNamesToIgnore;
         return this;
@@ -39,7 +47,7 @@ public final class ResponseBodyMatchers {
         return this;
     }
 
-    public ResponseBodyMatchers ignoringAudition() {
+    public ResponseBodyMatchers ignoringAuditFields() {
         this.ignoreAudition = true;
         return this;
     }
@@ -52,7 +60,7 @@ public final class ResponseBodyMatchers {
             try {
                 var json = mvcResult.getResponse().getContentAsString();
                 var extractedValue = JsonPath.read(json, jsonPath);
-                T actualObject = JSON_MAPPER.readValue(JSON_MAPPER.writeValueAsString(extractedValue), targetClass);
+                T actualObject = JSON_MAPPER.convertValue(extractedValue, targetClass);
 
                 var ignoredFields = new ArrayList<>(Arrays.asList(fieldNamesToIgnore));
                 ignoredFields.addAll(Arrays.asList(optionalFieldNamesToIgnore));
@@ -86,13 +94,5 @@ public final class ResponseBodyMatchers {
 
     private static int compareTemporalByDelta(LocalDateTime a, LocalDateTime b) {
         return Math.abs(ChronoUnit.NANOS.between(a, b)) < 1000 ? 0 : a.compareTo(b);
-    }
-
-    public static ResponseBodyMatchers responseBody() {
-        return new ResponseBodyMatchers("$");
-    }
-
-    public static ResponseBodyMatchers responseBodyAt(String expression) {
-        return new ResponseBodyMatchers(expression);
     }
 }
