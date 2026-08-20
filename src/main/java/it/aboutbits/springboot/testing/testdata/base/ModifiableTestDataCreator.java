@@ -1,11 +1,11 @@
 package it.aboutbits.springboot.testing.testdata.base;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -68,22 +68,34 @@ public abstract class ModifiableTestDataCreator<CREATOR extends ModifiableTestDa
     }
 
     @Override
-    protected List<ITEM> create() {
-        var result = new ArrayList<ITEM>();
+    @SuppressWarnings("unchecked")
+    @CanIgnoreReturnValue
+    public CREATOR parallel() {
+        super.parallel();
+        return (CREATOR) this;
+    }
 
-        for (var index = 0; index < numberOfItems; index++) {
+    @Override
+    @SuppressWarnings("unchecked")
+    @CanIgnoreReturnValue
+    public CREATOR sequential() {
+        super.sequential();
+        return (CREATOR) this;
+    }
+
+    @Override
+    protected List<ITEM> create() {
+        var result = createItems(index -> {
             var item = create(index);
 
             if (resultMutator != null) {
                 resultMutator.accept(item, index);
 
-                result.add(
-                        saveMutation(item)
-                );
-            } else {
-                result.add(item);
+                return saveMutation(item);
             }
-        }
+
+            return item;
+        });
 
         if (mutatorSet && !mutatorCalled) {
             log.error("Parameter-mutation is defined but was never called.");
