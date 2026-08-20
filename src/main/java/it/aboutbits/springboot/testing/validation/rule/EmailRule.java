@@ -10,10 +10,8 @@ import org.jspecify.annotations.NullMarked;
 @SuppressWarnings("unchecked")
 @NullMarked
 public interface EmailRule<V extends BaseRuleBuilder<?>> extends ValidationRulesData {
-    /**
-     * Bean validation considers `null` and blank values to be valid e-mail addresses.
-     * Combine this rule with `notNull` or `notBlank` if the property must be present.
-     */
+    /// Bean validation considers `null` and blank values to be valid e-mail addresses.
+    /// Combine this rule with `notNull` or `notBlank` if the property must be present.
     @CheckReturnValue
     default V email(String property) {
         addRule(
