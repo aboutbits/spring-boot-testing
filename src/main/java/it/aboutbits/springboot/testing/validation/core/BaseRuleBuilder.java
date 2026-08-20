@@ -1,6 +1,7 @@
 package it.aboutbits.springboot.testing.validation.core;
 
 import it.aboutbits.springboot.testing.validation.rule.BetweenRule;
+import it.aboutbits.springboot.testing.validation.rule.EmailRule;
 import it.aboutbits.springboot.testing.validation.rule.FutureRule;
 import it.aboutbits.springboot.testing.validation.rule.MaxRule;
 import it.aboutbits.springboot.testing.validation.rule.MinRule;
@@ -35,6 +36,7 @@ import java.util.function.Consumer;
 public abstract class BaseRuleBuilder<R extends BaseRuleBuilder<R>> implements
         ValidationRulesData,
         BetweenRule<R>,
+        EmailRule<R>,
         FutureRule<R>,
         MaxRule<R>,
         MinRule<R>,

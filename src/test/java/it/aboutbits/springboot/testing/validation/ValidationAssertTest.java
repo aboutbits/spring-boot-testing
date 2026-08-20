@@ -6,6 +6,7 @@ import it.aboutbits.springboot.testing.validation.core.BaseValidationAssert;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import it.aboutbits.springboot.toolbox.validation.annotation.ValidPassword;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -188,6 +189,11 @@ class ValidationAssertTest {
             @ValidPassword
             String password,
 
+            // Email
+            @Email String email,
+            @Email @Nullable String nullableEmail,
+            @Email @NotBlank String requiredEmail,
+
             // Not validated
             Object notValidated
     ) {
@@ -333,6 +339,13 @@ class ValidationAssertTest {
                 // ValidPassword
                 .validPassword("password", 8, 50)
 
+                // Email
+                .email("email")
+                .email("nullableEmail")
+                .nullable("nullableEmail")
+                .email("requiredEmail")
+                .notBlank("requiredEmail")
+
                 // Not validated
                 .notValidated("notValidated")
                 .isCompliant();
@@ -475,6 +488,13 @@ class ValidationAssertTest {
 
                         // ValidPassword
                         .validPassword("password", 8, 50)
+
+                        // Email
+                        .email("email")
+                        .email("nullableEmail")
+                        .nullable("nullableEmail")
+                        .email("requiredEmail")
+                        .notBlank("requiredEmail")
 
                         // Not validated
                         .notValidated("notValidated")
@@ -619,6 +639,13 @@ class ValidationAssertTest {
 
                         // ValidPassword
                         .validPassword("password", 8, 50)
+
+                        // Email
+                        .email("email")
+                        .email("nullableEmail")
+                        .nullable("nullableEmail")
+                        .email("requiredEmail")
+                        .notBlank("requiredEmail")
 
                         // Not validated
                         .notValidated("notValidated")
@@ -921,6 +948,11 @@ class ValidationAssertTest {
 
                 // ValidPassword
                 "password123",
+
+                // Email
+                "someone@example.com",
+                null,
+                "required@example.com",
 
                 // Not validated
                 null
