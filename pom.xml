@@ -13,6 +13,33 @@
     <artifactId>spring-boot-testing</artifactId>
     <version>2.6.0</version>
     <description>Testing library for Spring Boot projects.</description>
+    <url>https://github.com/aboutbits/spring-boot-testing</url>
+
+    <organization>
+        <name>About Bits GmbH</name>
+        <url>https://aboutbits.it</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://github.com/aboutbits/spring-boot-testing/blob/main/license.md</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>About Bits GmbH</name>
+            <organization>About Bits GmbH</organization>
+            <organizationUrl>https://aboutbits.it</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/aboutbits/spring-boot-testing</url>
+        <connection>scm:git:https://github.com/aboutbits/spring-boot-testing.git</connection>
+        <developerConnection>scm:git:git@github.com:aboutbits/spring-boot-testing.git</developerConnection>
+    </scm>
 
     <properties>
         <java.version>25</java.version>
