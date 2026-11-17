@@ -162,7 +162,7 @@ class ValidationAssertTest {
             @Past ZonedDateTime pastZonedDateTime,
 
             // Valid
-            @Valid Object validObject,
+            @Valid NestedParameter validObject,
 
             // Size - Min
             @Size(min = 3) String minSizeString,
@@ -197,6 +197,10 @@ class ValidationAssertTest {
             // Not validated
             Object notValidated
     ) {
+
+    }
+
+    public record NestedParameter() {
 
     }
 
