@@ -16,8 +16,8 @@
 
     <properties>
         <java.version>25</java.version>
-        <errorprone.version>2.50.0</errorprone.version>
-        <nullaway.version>0.13.7</nullaway.version>
+        <errorprone.version>2.52.0</errorprone.version>
+        <nullaway.version>0.14.4</nullaway.version>
     </properties>
 
     <dependencyManagement>
@@ -84,20 +84,20 @@
         <dependency>
             <groupId>net.datafaker</groupId>
             <artifactId>datafaker</artifactId>
-            <version>2.5.4</version>
+            <version>2.7.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.tngtech.archunit/archunit-junit5 -->
         <dependency>
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit5</artifactId>
-            <version>1.4.1</version>
+            <version>1.5.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit5-api</artifactId>
-            <version>1.4.1</version>
+            <version>1.5.1</version>
             <scope>compile</scope>
         </dependency>
 
@@ -113,7 +113,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.15.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -180,7 +179,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>13.4.0</version>
+                        <version>13.8.0</version>
                     </dependency>
                     <dependency>
                         <groupId>it.aboutbits</groupId>
