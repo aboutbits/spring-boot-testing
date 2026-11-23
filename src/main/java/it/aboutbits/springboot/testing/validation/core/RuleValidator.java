@@ -10,6 +10,9 @@ import lombok.SneakyThrows;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -386,7 +389,28 @@ final class RuleValidator<P> {
     private static <T> boolean hasValidAnnotation(String propertyName, T object) {
         var field = getFieldOrFail(propertyName, object);
 
-        return field.getAnnotation(Valid.class) != null;
+        return hasValidAnnotation(field, field.getAnnotatedType());
+    }
+
+    /// Returns `true` when `@Valid` is on the element itself (`@Valid Item item`) or on a type argument of its type at any depth (`List<@Valid Item>`, `Map<String, List<@Valid Item>>`, `List<Outer.@Valid Inner>`). Hibernate Validator 9.1 deprecates `@Valid` on a container (HV000271) and wants it on the type argument.
+    ///
+    /// A `@Valid` on the type of the element itself (`Outer.@Valid Inner item`), on a wildcard bound (`List<? extends @Valid Item>`) or on an array component (`Outer.@Valid Inner[]`) does not count, because Hibernate Validator does not cascade there.
+    static boolean hasValidAnnotation(AnnotatedElement element, AnnotatedType type) {
+        return element.isAnnotationPresent(Valid.class) || hasValidTypeArgument(type);
+    }
+
+    private static boolean hasValidTypeArgument(AnnotatedType type) {
+        if (!(type instanceof AnnotatedParameterizedType parameterizedType)) {
+            return false;
+        }
+
+        for (var typeArgument : parameterizedType.getAnnotatedActualTypeArguments()) {
+            if (typeArgument.isAnnotationPresent(Valid.class) || hasValidTypeArgument(typeArgument)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static boolean hasNullableAnnotation(String propertyName, Object object) {

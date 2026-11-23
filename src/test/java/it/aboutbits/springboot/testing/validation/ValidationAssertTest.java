@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -202,6 +203,36 @@ class ValidationAssertTest {
 
     public record NestedParameter() {
 
+    }
+
+    public record ParameterWithValidTypeArguments(
+            List<@Valid NestedParameter> list,
+            Set<@Valid NestedParameter> set,
+            Map<String, @Valid NestedParameter> mapValue,
+            Map<@Valid NestedParameter, String> mapKey,
+            Optional<@Valid NestedParameter> optional,
+            List<Outer.@Valid Inner> qualifiedList,
+            Map<String, List<@Valid NestedParameter>> nestedContainer
+    ) {
+
+    }
+
+    public record ParameterWithoutValidTypeArgument(
+            List<NestedParameter> plainList
+    ) {
+
+    }
+
+    public record ParameterWithValidContainer(
+            @Valid List<NestedParameter> validList
+    ) {
+
+    }
+
+    public static final class Outer {
+        public record Inner() {
+
+        }
     }
 
     @Test
@@ -657,6 +688,59 @@ class ValidationAssertTest {
     }
 
     @Nested
+    class ValidBean {
+        @Test
+        void givenValidOnTypeArgument_shouldSucceed() {
+            var parameter = new ParameterWithValidTypeArguments(
+                    List.of(new NestedParameter()),
+                    Set.of(new NestedParameter()),
+                    Map.of("key", new NestedParameter()),
+                    Map.of(new NestedParameter(), "value"),
+                    Optional.of(new NestedParameter()),
+                    List.of(new Outer.Inner()),
+                    Map.of("key", List.of(new NestedParameter()))
+            );
+
+            assertThatCode(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("list")
+                            .validBean("set")
+                            .validBean("mapValue")
+                            .validBean("mapKey")
+                            .validBean("optional")
+                            .validBean("qualifiedList")
+                            .validBean("nestedContainer")
+                            .isCompliant()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenNoValidOnTypeArgument_shouldFail() {
+            var parameter = new ParameterWithoutValidTypeArgument(List.of(new NestedParameter()));
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("plainList")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: plainList");
+        }
+
+        @Test
+        void givenValidOnContainer_shouldSucceed() {
+            var parameter = new ParameterWithValidContainer(List.of(new NestedParameter()));
+
+            assertThatCode(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("validList")
+                            .isCompliant()
+            ).doesNotThrowAnyException();
+        }
+    }
+
+    @Nested
     @SuppressWarnings("java:S5778") // Suppress the warning for lambdas with more than one exception cause
     class AnnotationChecking {
         @Test
@@ -687,6 +771,25 @@ class ValidationAssertTest {
                             String.class
                     ).isEnabled()
             ).doesNotThrowAnyException();
+
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithValidTypeArgument",
+                            List.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenValidatedClass_andParameterWithoutValid_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithoutValidTypeArgument",
+                            List.class
+                    ).isEnabled()
+            );
         }
 
         @Test
@@ -995,6 +1098,12 @@ class ValidationAssertTest {
         }
 
         public void someMethodWithoutValidParameter(Long first, Integer second, String last) {
+        }
+
+        public void someMethodWithValidTypeArgument(List<@Valid NestedParameter> last) {
+        }
+
+        public void someMethodWithoutValidTypeArgument(List<NestedParameter> last) {
         }
     }
 

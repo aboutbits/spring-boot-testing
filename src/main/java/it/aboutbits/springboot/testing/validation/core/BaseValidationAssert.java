@@ -2,7 +2,6 @@ package it.aboutbits.springboot.testing.validation.core;
 
 import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.toolbox.type.CustomType;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +78,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
             try {
                 var method = classUnderTest.getMethod(methodName, methodParameterTypes);
                 var parameter = method.getParameters()[method.getParameterCount() - 1];
-                assertThat(parameter.isAnnotationPresent(Valid.class)).isTrue();
+                assertThat(RuleValidator.hasValidAnnotation(parameter, parameter.getAnnotatedType())).isTrue();
             } catch (NoSuchMethodException e) {
                 throw new AssertionError(
                         "Method \"%s(%s)\" not found in class \"%s\"".formatted(
