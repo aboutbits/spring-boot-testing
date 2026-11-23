@@ -26,6 +26,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.validation.annotation.Validated;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
@@ -955,6 +959,97 @@ class ValidationAssertTest {
         }
 
         @Test
+        void givenValidatedOnSuperclass_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassExtendingValidated.class,
+                            "someMethodWithValidParameter",
+                            String.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenValidatedAsMetaAnnotation_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassWithMetaValidated.class,
+                            "someMethodWithValidParameter",
+                            String.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenValidatedAndValidOnInterface_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassImplementingValidatedInterface.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenValidOnParameterOfOverriddenMethod_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassExtendingBaseWithValidParameter.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassImplementingGenericInterface.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenValidOnParameterOfOverloadedMethod_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassImplementingValidatedInterface.class,
+                            "save",
+                            String.class
+                    ).isEnabled()
+            ).withMessage(
+                    "Missing @Valid annotation for parameter \"last\" of method \"save\" in class \"%s\"",
+                    ClassImplementingValidatedInterface.class.getCanonicalName()
+            );
+        }
+
+        @Test
+        void givenAnnotationThatHibernateValidatorDoesNotCascade_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithValidatedParameter",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).withMessage(
+                    "Missing @Valid annotation for parameter \"last\" of method \"someMethodWithValidatedParameter\" in class \"%s\"",
+                    ClassWithValidated.class.getCanonicalName()
+            );
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithMetaValidParameter",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).withMessage(
+                    "Missing @Valid annotation for parameter \"last\" of method \"someMethodWithMetaValidParameter\" in class \"%s\"",
+                    ClassWithValidated.class.getCanonicalName()
+            );
+        }
+
+        @Test
         void givenNotValidatedClass_shouldAlwaysFail() {
             assertThatExceptionOfType(AssertionError.class).isThrownBy(
                     () -> assertThatValidation().calling(
@@ -1276,6 +1371,12 @@ class ValidationAssertTest {
 
         public void someMethodWithValidOnTypeArgumentOfRecordContainer(Bag<@Valid NestedParameter> last) {
         }
+
+        public void someMethodWithValidatedParameter(@Validated NestedParameter last) {
+        }
+
+        public void someMethodWithMetaValidParameter(@ValidCascade NestedParameter last) {
+        }
     }
 
     @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
@@ -1296,6 +1397,67 @@ class ValidationAssertTest {
         }
 
         public void someMethodWithoutValidParameter(Long first, Integer second, String last) {
+        }
+    }
+
+    public static class ClassExtendingValidated extends ClassWithValidated {
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Validated
+    public @interface ValidatedService {
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.PARAMETER)
+    @Valid
+    public @interface ValidCascade {
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @ValidatedService
+    public static class ClassWithMetaValidated {
+        public void someMethodWithValidParameter(@Valid String last) {
+        }
+    }
+
+    @Validated
+    public interface ValidatedInterface {
+        void save(@Valid NestedParameter last);
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    public static class ClassImplementingValidatedInterface implements ValidatedInterface {
+        @Override
+        public void save(NestedParameter last) {
+        }
+
+        public void save(String last) {
+        }
+    }
+
+    public abstract static class BaseWithValidParameter {
+        public abstract void save(@Valid NestedParameter last);
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassExtendingBaseWithValidParameter extends BaseWithValidParameter {
+        @Override
+        public void save(NestedParameter last) {
+        }
+    }
+
+    public interface GenericInterface<T> {
+        void save(@Valid T last);
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassImplementingGenericInterface implements GenericInterface<NestedParameter> {
+        @Override
+        public void save(NestedParameter last) {
         }
     }
 
