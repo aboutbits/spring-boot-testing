@@ -868,6 +868,9 @@ class ValidationAssertTest {
                             "someMethodWithValidParameter",
                             String.class
                     ).isEnabled()
+            ).withMessage(
+                    "Missing @Validated annotation on class \"%s\"",
+                    ClassWithoutValidated.class.getCanonicalName()
             );
 
             assertThatExceptionOfType(AssertionError.class).isThrownBy(

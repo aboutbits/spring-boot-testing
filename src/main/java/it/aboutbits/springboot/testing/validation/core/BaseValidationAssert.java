@@ -73,7 +73,9 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         private final Class<?>[] methodParameterTypes;
 
         public void isEnabled() {
-            assertThat(classUnderTest.isAnnotationPresent(Validated.class)).isTrue();
+            assertThat(classUnderTest.isAnnotationPresent(Validated.class))
+                    .withFailMessage("Missing @Validated annotation on class \"%s\"", classUnderTest.getCanonicalName())
+                    .isTrue();
 
             try {
                 var method = classUnderTest.getMethod(methodName, methodParameterTypes);
