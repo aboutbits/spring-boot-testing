@@ -16,10 +16,13 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -392,7 +395,9 @@ final class RuleValidator<P> {
         return hasValidAnnotation(field, field.getAnnotatedType());
     }
 
-    /// Returns `true` when `@Valid` is on the element itself (`@Valid Item item`) or on a type argument of its type at any depth (`List<@Valid Item>`, `Map<String, List<@Valid Item>>`, `List<Outer.@Valid Inner>`). Hibernate Validator 9.1 deprecates `@Valid` on a container (HV000271) and wants it on the type argument.
+    /// Returns `true` when `@Valid` is on the element itself (`@Valid Item item`) or on a type argument of a JDK container at any depth (`List<@Valid Item>`, `Map<String, List<@Valid Item>>`, `List<Outer.@Valid Inner>`). Hibernate Validator 9.1 deprecates `@Valid` on a container (HV000271) and wants it on the type argument.
+    ///
+    /// A JDK container is a type from a `java.` package that is an `Iterable`, a `Map` or an `Optional` (`List`, `Set`, `Collection`, `Map`, `Optional` and others). Hibernate Validator has its built-in value extractors for these types. For your own types (for example a record that implements `Iterable`), a `@Valid` on the type argument cascades only into the elements and not into the properties of the type itself, so only `@Valid` on the element counts.
     ///
     /// A `@Valid` on the type of the element itself (`Outer.@Valid Inner item`), on a wildcard bound (`List<? extends @Valid Item>`) or on an array component (`Outer.@Valid Inner[]`) does not count, because Hibernate Validator does not cascade there.
     static boolean hasValidAnnotation(AnnotatedElement element, AnnotatedType type) {
@@ -400,7 +405,7 @@ final class RuleValidator<P> {
     }
 
     private static boolean hasValidTypeArgument(AnnotatedType type) {
-        if (!(type instanceof AnnotatedParameterizedType parameterizedType)) {
+        if (!(type instanceof AnnotatedParameterizedType parameterizedType) || !isJdkContainer(parameterizedType)) {
             return false;
         }
 
@@ -411,6 +416,15 @@ final class RuleValidator<P> {
         }
 
         return false;
+    }
+
+    private static boolean isJdkContainer(AnnotatedParameterizedType type) {
+        var rawType = (Class<?>) ((ParameterizedType) type.getType()).getRawType();
+
+        return rawType.getPackageName().startsWith("java.")
+                && (Iterable.class.isAssignableFrom(rawType)
+                || Map.class.isAssignableFrom(rawType)
+                || Optional.class.equals(rawType));
     }
 
     private static boolean hasNullableAnnotation(String propertyName, Object object) {

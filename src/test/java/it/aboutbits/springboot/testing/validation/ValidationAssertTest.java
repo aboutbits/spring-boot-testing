@@ -40,6 +40,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -247,9 +248,47 @@ class ValidationAssertTest {
 
     }
 
+    public record ParameterWithValidOnRecordContainerTypeArgument(
+            Bag<@Valid NestedParameter> bag
+    ) {
+
+    }
+
+    public record ParameterWithValidOnClassContainerTypeArgument(
+            Box<@Valid NestedParameter> box
+    ) {
+
+    }
+
+    public record ParameterWithValidRecordContainer(
+            @Valid Bag<NestedParameter> bag
+    ) {
+
+    }
+
     public static final class Outer {
         public record Inner() {
 
+        }
+    }
+
+    public record Bag<T>(List<T> items) implements Iterable<T> {
+        @Override
+        public Iterator<T> iterator() {
+            return items.iterator();
+        }
+    }
+
+    public static final class Box<T> implements Iterable<T> {
+        private final List<T> items;
+
+        Box(List<T> items) {
+            this.items = items;
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            return items.iterator();
         }
     }
 
@@ -792,6 +831,42 @@ class ValidationAssertTest {
                             .isCompliant()
             ).doesNotThrowAnyException();
         }
+
+        @Test
+        void givenValidOnTypeArgumentOfRecordContainer_shouldFail() {
+            var parameter = new ParameterWithValidOnRecordContainerTypeArgument(new Bag<>(List.of(new NestedParameter())));
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("bag")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: bag");
+        }
+
+        @Test
+        void givenValidOnTypeArgumentOfClassContainer_shouldFail() {
+            var parameter = new ParameterWithValidOnClassContainerTypeArgument(new Box<>(List.of(new NestedParameter())));
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("box")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: box");
+        }
+
+        @Test
+        void givenValidOnRecordContainer_shouldSucceed() {
+            var parameter = new ParameterWithValidRecordContainer(new Bag<>(List.of(new NestedParameter())));
+
+            assertThatCode(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("bag")
+                            .isCompliant()
+            ).doesNotThrowAnyException();
+        }
     }
 
     @Nested
@@ -833,6 +908,14 @@ class ValidationAssertTest {
                             List.class
                     ).isEnabled()
             ).doesNotThrowAnyException();
+
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithValidRecordContainer",
+                            Bag.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
         }
 
         @Test
@@ -856,6 +939,17 @@ class ValidationAssertTest {
                     ).isEnabled()
             ).withMessage(
                     "Missing @Valid annotation for parameter \"last\" of method \"someMethodWithoutValidTypeArgument\" in class \"%s\"",
+                    ClassWithValidated.class.getCanonicalName()
+            );
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
+                            "someMethodWithValidOnTypeArgumentOfRecordContainer",
+                            Bag.class
+                    ).isEnabled()
+            ).withMessage(
+                    "Missing @Valid annotation for parameter \"last\" of method \"someMethodWithValidOnTypeArgumentOfRecordContainer\" in class \"%s\"",
                     ClassWithValidated.class.getCanonicalName()
             );
         }
@@ -1175,6 +1269,12 @@ class ValidationAssertTest {
         }
 
         public void someMethodWithoutValidTypeArgument(List<NestedParameter> last) {
+        }
+
+        public void someMethodWithValidRecordContainer(@Valid Bag<NestedParameter> last) {
+        }
+
+        public void someMethodWithValidOnTypeArgumentOfRecordContainer(Bag<@Valid NestedParameter> last) {
         }
     }
 
