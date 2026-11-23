@@ -223,6 +223,24 @@ class ValidationAssertTest {
 
     }
 
+    public record ParameterWithValidOnOwnType(
+            Outer.@Valid Inner own
+    ) {
+
+    }
+
+    public record ParameterWithValidOnWildcardBound(
+            List<? extends @Valid NestedParameter> wildcardBound
+    ) {
+
+    }
+
+    public record ParameterWithValidOnArrayComponent(
+            Outer.@Valid Inner[] array
+    ) {
+
+    }
+
     public record ParameterWithValidContainer(
             @Valid List<NestedParameter> validList
     ) {
@@ -728,6 +746,42 @@ class ValidationAssertTest {
         }
 
         @Test
+        void givenValidOnOwnType_shouldFail() {
+            var parameter = new ParameterWithValidOnOwnType(new Outer.Inner());
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("own")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: own");
+        }
+
+        @Test
+        void givenValidOnWildcardBound_shouldFail() {
+            var parameter = new ParameterWithValidOnWildcardBound(List.of(new NestedParameter()));
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("wildcardBound")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: wildcardBound");
+        }
+
+        @Test
+        void givenValidOnArrayComponent_shouldFail() {
+            var parameter = new ParameterWithValidOnArrayComponent(new Outer.Inner[]{new Outer.Inner()});
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("array")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: array");
+        }
+
+        @Test
         void givenValidOnContainer_shouldSucceed() {
             var parameter = new ParameterWithValidContainer(List.of(new NestedParameter()));
 
@@ -786,9 +840,23 @@ class ValidationAssertTest {
             assertThatExceptionOfType(AssertionError.class).isThrownBy(
                     () -> assertThatValidation().calling(
                             ClassWithValidated.class,
+                            "someMethodWithoutValidParameter",
+                            String.class
+                    ).isEnabled()
+            ).withMessage(
+                    "Missing @Valid annotation for parameter \"last\" of method \"someMethodWithoutValidParameter\" in class \"%s\"",
+                    ClassWithValidated.class.getCanonicalName()
+            );
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidated.class,
                             "someMethodWithoutValidTypeArgument",
                             List.class
                     ).isEnabled()
+            ).withMessage(
+                    "Missing @Valid annotation for parameter \"last\" of method \"someMethodWithoutValidTypeArgument\" in class \"%s\"",
+                    ClassWithValidated.class.getCanonicalName()
             );
         }
 

@@ -78,7 +78,14 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
             try {
                 var method = classUnderTest.getMethod(methodName, methodParameterTypes);
                 var parameter = method.getParameters()[method.getParameterCount() - 1];
-                assertThat(RuleValidator.hasValidAnnotation(parameter, parameter.getAnnotatedType())).isTrue();
+                assertThat(RuleValidator.hasValidAnnotation(parameter, parameter.getAnnotatedType()))
+                        .withFailMessage(
+                                "Missing @Valid annotation for parameter \"%s\" of method \"%s\" in class \"%s\"",
+                                parameter.getName(),
+                                methodName,
+                                classUnderTest.getCanonicalName()
+                        )
+                        .isTrue();
             } catch (NoSuchMethodException e) {
                 throw new AssertionError(
                         "Method \"%s(%s)\" not found in class \"%s\"".formatted(
