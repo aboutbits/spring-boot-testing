@@ -1,22 +1,22 @@
 package it.aboutbits.springboot.testing.validation.core;
 
+import jakarta.validation.ConstraintDeclarationException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import jakarta.validation.metadata.BeanDescriptor;
+import jakarta.validation.metadata.CascadableDescriptor;
+import jakarta.validation.metadata.ContainerDescriptor;
+import jakarta.validation.metadata.ContainerElementTypeDescriptor;
 import lombok.SneakyThrows;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.AnnotatedParameterizedType;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -268,9 +268,11 @@ final class RuleValidator<P> {
                 var isBeanType = nonBeanTypes.stream().noneMatch(type -> type.isAssignableFrom(field.getType()));
 
                 if (isBeanType) {
-                    var maybeAnnotation = field.getAnnotation(Valid.class);
-                    assertThat(maybeAnnotation).withFailMessage("Missing @Valid annotation for property: " + field.getName() + ". Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.")
-                            .isNotNull();
+                    // The nested record itself must be cascaded. A cascade into its elements only (for a record that is also a container) does not validate its own properties.
+                    var propertyDescriptor = getBeanDescriptor(clazz, "class \"%s\"".formatted(clazz.getCanonicalName()))
+                            .getConstraintsForProperty(field.getName());
+                    assertThat(propertyDescriptor != null && propertyDescriptor.isCascaded()).withFailMessage("Missing @Valid annotation for property: " + field.getName() + ". Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.")
+                            .isTrue();
                 }
             }
         }
@@ -390,27 +392,44 @@ final class RuleValidator<P> {
     }
 
     private static <T> boolean hasValidAnnotation(String propertyName, T object) {
-        var field = getFieldOrFail(propertyName, object);
+        getFieldOrFail(propertyName, object);
 
-        return hasValidAnnotation(field, field.getAnnotatedType());
+        var clazz = object.getClass();
+        var propertyDescriptor = getBeanDescriptor(clazz, "class \"%s\"".formatted(clazz.getCanonicalName()))
+                .getConstraintsForProperty(propertyName);
+
+        return isCascaded(propertyDescriptor);
     }
 
-    /// Returns `true` when `@Valid` is on the element itself (`@Valid Item item`) or on a type argument of a JDK container at any depth (`List<@Valid Item>`, `Map<String, List<@Valid Item>>`, `List<Outer.@Valid Inner>`). Hibernate Validator 9.1 deprecates `@Valid` on a container (HV000271) and wants it on the type argument.
+    /// Returns the metadata that Hibernate Validator reads for the class: the constraints and the cascades of its properties and methods, from the whole type hierarchy.
     ///
-    /// A JDK container is a type from a `java.` package that is an `Iterable`, a `Map` or an `Optional` (`List`, `Set`, `Collection`, `Map`, `Optional` and others). Hibernate Validator has its built-in value extractors for these types. For your own types (for example a record that implements `Iterable`), a `@Valid` on the type argument cascades only into the elements and not into the properties of the type itself, so only `@Valid` on the element counts.
-    ///
-    /// A `@Valid` on the type of the element itself (`Outer.@Valid Inner item`), on a wildcard bound (`List<? extends @Valid Item>`) or on an array component (`Outer.@Valid Inner[]`) does not count, because Hibernate Validator does not cascade there.
-    static boolean hasValidAnnotation(AnnotatedElement element, AnnotatedType type) {
-        return element.isAnnotationPresent(Valid.class) || hasValidTypeArgument(type);
-    }
-
-    private static boolean hasValidTypeArgument(AnnotatedType type) {
-        if (!(type instanceof AnnotatedParameterizedType parameterizedType) || !isJdkContainer(parameterizedType)) {
-            return false;
+    /// Hibernate Validator rejects some configurations, for example `@Valid` on the parameter of a method that overrides a method without it (HV000151), or a type argument without a value extractor (HV000197). Then every validation of the class fails, so this method fails with an `AssertionError` that names the checked element.
+    static BeanDescriptor getBeanDescriptor(Class<?> clazz, String checkedElement) {
+        try {
+            return VALIDATOR_FACTORY.getValidator().getConstraintsForClass(clazz);
+        } catch (ConstraintDeclarationException e) {
+            throw new AssertionError(
+                    "Hibernate Validator rejects the configuration of %s: %s".formatted(checkedElement, e.getMessage()),
+                    e
+            );
         }
+    }
 
-        for (var typeArgument : parameterizedType.getAnnotatedActualTypeArguments()) {
-            if (typeArgument.isAnnotationPresent(Valid.class) || hasValidTypeArgument(typeArgument)) {
+    /// Returns `true` when Hibernate Validator cascades into the property or parameter itself (`@Valid Item item`), or into a type argument of a JDK container at any depth (`List<@Valid Item>`, `Map<String, List<@Valid Item>>`, `List<Outer.@Valid Inner>`). Hibernate Validator 9.1 deprecates `@Valid` on a container (HV000271) and wants it on the type argument.
+    ///
+    /// A JDK container is a type from a `java.` package that is an `Iterable`, a `Map` or an `Optional` (`List`, `Set`, `Collection`, `Map`, `Optional` and others). Hibernate Validator has its built-in value extractors for these types. For your own types (for example a record that implements `Iterable`), a `@Valid` on the type argument cascades only into the elements and not into the properties of the type itself, so only `@Valid` on the property or parameter counts.
+    ///
+    /// The check reads the metadata of Hibernate Validator, so a `@Valid` where Hibernate Validator does not cascade does not count, for example on the type of the element itself (`Outer.@Valid Inner item`), on a wildcard bound (`List<? extends @Valid Item>`) or on an array component (`Outer.@Valid Inner[]`).
+    static <D extends CascadableDescriptor & ContainerDescriptor> boolean isCascaded(@Nullable D descriptor) {
+        return descriptor != null
+                && (descriptor.isCascaded() || hasCascadedJdkContainerElement(descriptor.getConstrainedContainerElementTypes()));
+    }
+
+    private static boolean hasCascadedJdkContainerElement(Set<ContainerElementTypeDescriptor> containerElements) {
+        for (var containerElement : containerElements) {
+            if (isJdkContainer(containerElement.getContainerClass())
+                    && (containerElement.isCascaded()
+                    || hasCascadedJdkContainerElement(containerElement.getConstrainedContainerElementTypes()))) {
                 return true;
             }
         }
@@ -418,13 +437,11 @@ final class RuleValidator<P> {
         return false;
     }
 
-    private static boolean isJdkContainer(AnnotatedParameterizedType type) {
-        var rawType = (Class<?>) ((ParameterizedType) type.getType()).getRawType();
-
-        return rawType.getPackageName().startsWith("java.")
-                && (Iterable.class.isAssignableFrom(rawType)
-                || Map.class.isAssignableFrom(rawType)
-                || Optional.class.equals(rawType));
+    private static boolean isJdkContainer(Class<?> containerClass) {
+        return containerClass.getPackageName().startsWith("java.")
+                && (Iterable.class.isAssignableFrom(containerClass)
+                || Map.class.isAssignableFrom(containerClass)
+                || Optional.class.equals(containerClass));
     }
 
     private static boolean hasNullableAnnotation(String propertyName, Object object) {

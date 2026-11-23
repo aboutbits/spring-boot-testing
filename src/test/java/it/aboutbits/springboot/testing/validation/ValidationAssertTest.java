@@ -3,8 +3,10 @@ package it.aboutbits.springboot.testing.validation;
 import it.aboutbits.archunit.toolbox.support.ArchIgnoreNoProductionCounterpart;
 import it.aboutbits.springboot.testing.validation.core.BaseRuleBuilder;
 import it.aboutbits.springboot.testing.validation.core.BaseValidationAssert;
+import it.aboutbits.springboot.testing.validation.other.PackagePrivateBase;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import it.aboutbits.springboot.toolbox.validation.annotation.ValidPassword;
+import jakarta.validation.ConstraintDeclarationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
@@ -51,6 +53,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static it.aboutbits.springboot.testing.validation.ValidationAssertTest.TestValidationAssert.assertThatValidation;
@@ -260,6 +263,18 @@ class ValidationAssertTest {
 
     public record ParameterWithValidOnClassContainerTypeArgument(
             Box<@Valid NestedParameter> box
+    ) {
+
+    }
+
+    public record ParameterWithValidInRecordContainerInList(
+            List<Bag<@Valid NestedParameter>> listOfBags
+    ) {
+
+    }
+
+    public record ParameterWithValidOnAtomicReference(
+            AtomicReference<@Valid NestedParameter> atomic
     ) {
 
     }
@@ -871,6 +886,31 @@ class ValidationAssertTest {
                             .isCompliant()
             ).doesNotThrowAnyException();
         }
+
+        @Test
+        void givenValidOnTypeArgumentOfRecordContainerInJdkContainer_shouldFail() {
+            var parameter = new ParameterWithValidInRecordContainerInList(List.of(new Bag<>(List.of(new NestedParameter()))));
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("listOfBags")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: listOfBags");
+        }
+
+        @Test
+        void givenValidOnTypeArgumentWithoutValueExtractor_shouldFail() {
+            var parameter = new ParameterWithValidOnAtomicReference(new AtomicReference<>(new NestedParameter()));
+
+            // Hibernate Validator has no value extractor for AtomicReference, so it rejects the class before the @Valid check runs.
+            assertThatExceptionOfType(ConstraintDeclarationException.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("atomic")
+                            .isCompliant()
+            ).withMessageContaining("HV000197");
+        }
     }
 
     @Nested
@@ -1046,6 +1086,85 @@ class ValidationAssertTest {
             ).withMessage(
                     "Missing @Valid annotation for parameter \"last\" of method \"someMethodWithMetaValidParameter\" in class \"%s\"",
                     ClassWithValidated.class.getCanonicalName()
+            );
+        }
+
+        @Test
+        void givenValidOnStaticInterfaceMethod_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassImplementingInterfaceWithStaticMethod.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).withMessage(
+                    "Missing @Valid annotation for parameter \"last\" of method \"save\" in class \"%s\"",
+                    ClassImplementingInterfaceWithStaticMethod.class.getCanonicalName()
+            );
+        }
+
+        @Test
+        void givenValidOnPackagePrivateMethodInOtherPackage_shouldSucceed() {
+            // Java does not see an override here, but Hibernate Validator 9.1 merges the two methods and cascades into the parameter, so the check follows Hibernate Validator.
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassExtendingPackagePrivateBase.class,
+                            "save",
+                            PackagePrivateBase.Item.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenValidOnMethodInParallelType_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithParallelMethods.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).withMessageStartingWith(
+                    "Hibernate Validator rejects the configuration of method \"save\" in class \"%s\": HV000152",
+                    ClassWithParallelMethods.class.getCanonicalName()
+            );
+        }
+
+        @Test
+        void givenValidAddedByOverridingMethod_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassAddingValidToOverriddenMethod.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).withMessageStartingWith(
+                    "Hibernate Validator rejects the configuration of method \"save\" in class \"%s\": HV000151",
+                    ClassAddingValidToOverriddenMethod.class.getCanonicalName()
+            );
+        }
+
+        @Test
+        void givenValidOnSuperinterfaceOfRedeclaringInterface_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassImplementingRedeclaringInterface.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenValidOnTypeArgumentWithoutValueExtractor_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassWithValidOnAtomicReference.class,
+                            "save",
+                            AtomicReference.class
+                    ).isEnabled()
+            ).withMessageStartingWith(
+                    "Hibernate Validator rejects the configuration of method \"save\" in class \"%s\": HV000197",
+                    ClassWithValidOnAtomicReference.class.getCanonicalName()
             );
         }
 
@@ -1456,6 +1575,76 @@ class ValidationAssertTest {
     @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
     @Validated
     public static class ClassImplementingGenericInterface implements GenericInterface<NestedParameter> {
+        @Override
+        public void save(NestedParameter last) {
+        }
+    }
+
+    public interface InterfaceWithStaticMethod {
+        @SuppressWarnings("java:S1186") // Suppress the "empty method body" warning
+        static void save(@Valid NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassImplementingInterfaceWithStaticMethod implements InterfaceWithStaticMethod {
+        public void save(NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassExtendingPackagePrivateBase extends PackagePrivateBase {
+        public void save(PackagePrivateBase.Item last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    public static class ParallelBase {
+        public void save(NestedParameter last) {
+        }
+    }
+
+    public interface ParallelInterface {
+        void save(@Valid NestedParameter last);
+    }
+
+    @Validated
+    public static class ClassWithParallelMethods extends ParallelBase implements ParallelInterface {
+    }
+
+    public interface InterfaceWithoutValid {
+        void save(NestedParameter last);
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassAddingValidToOverriddenMethod implements InterfaceWithoutValid {
+        @Override
+        public void save(@Valid NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassWithValidOnAtomicReference {
+        public void save(AtomicReference<@Valid NestedParameter> last) {
+        }
+    }
+
+    public interface ParentInterface {
+        void save(@Valid NestedParameter last);
+    }
+
+    public interface RedeclaringInterface extends ParentInterface {
+        @Override
+        void save(NestedParameter last);
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassImplementingRedeclaringInterface implements RedeclaringInterface {
         @Override
         public void save(NestedParameter last) {
         }
