@@ -278,6 +278,24 @@ class ValidationAssertTest {
 
     }
 
+    public record ParameterWithStaticRecordConstant(
+            @Valid NestedParameter nested
+    ) {
+        public static final NestedParameter DEFAULT = new NestedParameter();
+    }
+
+    public record ParameterWithNestedRecordWithoutValid(
+            @NotNull NestedParameter nested
+    ) {
+
+    }
+
+    public record ParameterWithNestedRecordContainerWithValidTypeArgument(
+            @NotNull Bag<@Valid NestedParameter> bag
+    ) {
+
+    }
+
     public record ParameterWithValidRecordContainer(
             @Valid Bag<NestedParameter> bag
     ) {
@@ -875,6 +893,42 @@ class ValidationAssertTest {
         }
 
         @Test
+        void givenStaticConstantOfRecordType_shouldSucceed() {
+            var parameter = new ParameterWithStaticRecordConstant(new NestedParameter());
+
+            assertThatCode(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .validBean("nested")
+                            .isCompliant()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenNestedRecordWithoutValid_shouldFail() {
+            var parameter = new ParameterWithNestedRecordWithoutValid(new NestedParameter());
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .notNull("nested")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: %s. Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.", "nested");
+        }
+
+        @Test
+        void givenNestedRecordContainerWithValidOnlyOnTypeArgument_shouldFail() {
+            var parameter = new ParameterWithNestedRecordContainerWithValidTypeArgument(new Bag<>(List.of(new NestedParameter())));
+
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().of(parameter)
+                            .usingBeanValidation()
+                            .notNull("bag")
+                            .isCompliant()
+            ).withMessage("Missing @Valid annotation for property: %s. Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.", "bag");
+        }
+
+        @Test
         void givenValidOnRecordContainer_shouldSucceed() {
             var parameter = new ParameterWithValidRecordContainer(new Bag<>(List.of(new NestedParameter())));
 
@@ -1118,6 +1172,39 @@ class ValidationAssertTest {
                     ClassExtendingPackagePrivateBase.class.getCanonicalName(),
                     PackagePrivateBase.class.getCanonicalName()
             );
+        }
+
+        @Test
+        void givenSamePrivateStaticMethodInSuperclass_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassExtendingPrivateStaticBase.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenOverrideOfPackagePrivateMethodInSamePackage_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassOverridingPackagePrivateMethod.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        void givenOverrideOfProtectedMethod_shouldSucceed() {
+            assertThatCode(
+                    () -> assertThatValidation().calling(
+                            ClassOverridingProtectedMethod.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).doesNotThrowAnyException();
         }
 
         @Test
@@ -1609,6 +1696,47 @@ class ValidationAssertTest {
     @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
     @Validated
     public static class ClassImplementingInterfaceWithStaticMethod implements InterfaceWithStaticMethod {
+        public void save(NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    public static class PrivateStaticBase {
+        private static void save(NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassExtendingPrivateStaticBase extends PrivateStaticBase {
+        public void save(@Valid NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    public static class SamePackageBase {
+        void save(@Valid NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassOverridingPackagePrivateMethod extends SamePackageBase {
+        @Override
+        public void save(NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    public static class ProtectedBase {
+        protected void save(@Valid NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassOverridingProtectedMethod extends ProtectedBase {
+        @Override
         public void save(NestedParameter last) {
         }
     }

@@ -109,7 +109,10 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         private void assertNoHiddenMethodInSuperclass(Method method) {
             for (var type = classUnderTest.getSuperclass(); type != null && !Object.class.equals(type); type = type.getSuperclass()) {
                 for (var candidate : type.getDeclaredMethods()) {
+                    // Hibernate Validator does not read static or synthetic methods, so they cannot make its result unreliable.
                     if (candidate.equals(method)
+                            || Modifier.isStatic(candidate.getModifiers())
+                            || candidate.isSynthetic()
                             || !candidate.getName().equals(method.getName())
                             || !Arrays.equals(candidate.getParameterTypes(), method.getParameterTypes())) {
                         continue;

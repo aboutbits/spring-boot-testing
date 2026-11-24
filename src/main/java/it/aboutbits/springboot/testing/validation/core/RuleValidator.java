@@ -272,6 +272,11 @@ final class RuleValidator<P> {
         var clazz = parameterUnderTest.getClass();
 
         for (var field : clazz.getDeclaredFields()) {
+            // Hibernate Validator does not validate static fields.
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
             var isRecord = Record.class.isAssignableFrom(field.getType());
             if (isRecord) {
                 var isBeanType = nonBeanTypes.stream().noneMatch(type -> type.isAssignableFrom(field.getType()));
