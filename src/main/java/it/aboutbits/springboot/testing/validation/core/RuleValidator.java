@@ -10,6 +10,7 @@ import jakarta.validation.metadata.BeanDescriptor;
 import jakarta.validation.metadata.CascadableDescriptor;
 import jakarta.validation.metadata.ContainerDescriptor;
 import jakarta.validation.metadata.ContainerElementTypeDescriptor;
+import jakarta.validation.metadata.PropertyDescriptor;
 import lombok.SneakyThrows;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -69,6 +70,12 @@ final class RuleValidator<P> {
         var functions = assertionParameter.functions();
         var nonBeanTypes = assertionParameter.nonBeanTypes();
 
+        // Read the metadata first: when Hibernate Validator rejects the class, every later step fails with a less clear exception.
+        var beanDescriptor = getBeanDescriptor(
+                parameterUnderTest.getClass(),
+                "class \"%s\"".formatted(parameterUnderTest.getClass().getCanonicalName())
+        );
+
         var rulesAndFunctions = rules.size() + functions.size();
 
         assertThat(rulesAndFunctions)
@@ -100,13 +107,13 @@ final class RuleValidator<P> {
                 validator
         );
 
-        assertThatValidAnnotationsArePresent(rules, propertiesWithRules, parameterUnderTest);
+        assertThatValidAnnotationsArePresent(rules, propertiesWithRules, parameterUnderTest, beanDescriptor);
 
         assertThatNullableAnnotationsArePresent(rules, propertiesWithRules, parameterUnderTest);
 
         assertThatAllPropertiesHaveRules(parameterUnderTest, propertiesWithRules);
 
-        checkIfNestedValidationIsEnabledForNestedRecords(parameterUnderTest, nonBeanTypes);
+        checkIfNestedValidationIsEnabledForNestedRecords(parameterUnderTest, nonBeanTypes, beanDescriptor);
     }
 
     private static HashSet<String> getPropertyNamesThatHaveRules(List<Rule> rules) {
@@ -203,7 +210,8 @@ final class RuleValidator<P> {
     private static <P> void assertThatValidAnnotationsArePresent(
             List<Rule> rules,
             HashSet<String> propertiesWithRules,
-            P parameterUnderTest
+            P parameterUnderTest,
+            BeanDescriptor beanDescriptor
     ) {
         var propertiesWithValid = rules.stream()
                 .filter(Rule::isRequireValid)
@@ -213,7 +221,7 @@ final class RuleValidator<P> {
         for (var property : propertiesWithValid) {
             propertiesWithRules.add(property);
 
-            assertThat(hasValidAnnotation(property, parameterUnderTest))
+            assertThat(isCascaded(getPropertyDescriptor(property, parameterUnderTest, beanDescriptor)))
                     .withFailMessage("Missing @Valid annotation for property: " + property)
                     .isTrue();
         }
@@ -258,7 +266,8 @@ final class RuleValidator<P> {
 
     private static <P> void checkIfNestedValidationIsEnabledForNestedRecords(
             P parameterUnderTest,
-            Set<Class<?>> nonBeanTypes
+            Set<Class<?>> nonBeanTypes,
+            BeanDescriptor beanDescriptor
     ) {
         var clazz = parameterUnderTest.getClass();
 
@@ -269,8 +278,7 @@ final class RuleValidator<P> {
 
                 if (isBeanType) {
                     // The nested record itself must be cascaded. A cascade into its elements only (for a record that is also a container) does not validate its own properties.
-                    var propertyDescriptor = getBeanDescriptor(clazz, "class \"%s\"".formatted(clazz.getCanonicalName()))
-                            .getConstraintsForProperty(field.getName());
+                    var propertyDescriptor = getPropertyDescriptor(field.getName(), parameterUnderTest, beanDescriptor);
                     assertThat(propertyDescriptor != null && propertyDescriptor.isCascaded()).withFailMessage("Missing @Valid annotation for property: " + field.getName() + ". Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.")
                             .isTrue();
                 }
@@ -391,14 +399,15 @@ final class RuleValidator<P> {
         return field.getType();
     }
 
-    private static <T> boolean hasValidAnnotation(String propertyName, T object) {
+    private static @Nullable PropertyDescriptor getPropertyDescriptor(
+            String propertyName,
+            Object object,
+            BeanDescriptor beanDescriptor
+    ) {
+        // Called only for its exception: a property that does not exist fails with "Property does not exist" and not with "Missing @Valid annotation".
         getFieldOrFail(propertyName, object);
 
-        var clazz = object.getClass();
-        var propertyDescriptor = getBeanDescriptor(clazz, "class \"%s\"".formatted(clazz.getCanonicalName()))
-                .getConstraintsForProperty(propertyName);
-
-        return isCascaded(propertyDescriptor);
+        return beanDescriptor.getConstraintsForProperty(propertyName);
     }
 
     /// Returns the metadata that Hibernate Validator reads for the class: the constraints and the cascades of its properties and methods, from the whole type hierarchy.

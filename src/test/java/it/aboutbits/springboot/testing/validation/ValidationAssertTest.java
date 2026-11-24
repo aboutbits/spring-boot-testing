@@ -6,7 +6,6 @@ import it.aboutbits.springboot.testing.validation.core.BaseValidationAssert;
 import it.aboutbits.springboot.testing.validation.other.PackagePrivateBase;
 import it.aboutbits.springboot.toolbox.type.ScaledBigDecimal;
 import it.aboutbits.springboot.toolbox.validation.annotation.ValidPassword;
-import jakarta.validation.ConstraintDeclarationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
@@ -903,13 +902,16 @@ class ValidationAssertTest {
         void givenValidOnTypeArgumentWithoutValueExtractor_shouldFail() {
             var parameter = new ParameterWithValidOnAtomicReference(new AtomicReference<>(new NestedParameter()));
 
-            // Hibernate Validator has no value extractor for AtomicReference, so it rejects the class before the @Valid check runs.
-            assertThatExceptionOfType(ConstraintDeclarationException.class).isThrownBy(
+            // Hibernate Validator has no value extractor for AtomicReference, so it rejects the class.
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
                     () -> assertThatValidation().of(parameter)
                             .usingBeanValidation()
                             .validBean("atomic")
                             .isCompliant()
-            ).withMessageContaining("HV000197");
+            ).withMessageStartingWith(
+                    "Hibernate Validator rejects the configuration of class \"%s\": HV000197",
+                    ParameterWithValidOnAtomicReference.class.getCanonicalName()
+            );
         }
     }
 
@@ -1104,15 +1106,33 @@ class ValidationAssertTest {
         }
 
         @Test
-        void givenValidOnPackagePrivateMethodInOtherPackage_shouldSucceed() {
-            // Java does not see an override here, but Hibernate Validator 9.1 merges the two methods and cascades into the parameter, so the check follows Hibernate Validator.
-            assertThatCode(
+        void givenSamePackagePrivateMethodInSuperclassInOtherPackage_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
                     () -> assertThatValidation().calling(
                             ClassExtendingPackagePrivateBase.class,
                             "save",
                             PackagePrivateBase.Item.class
                     ).isEnabled()
-            ).doesNotThrowAnyException();
+            ).withMessage(
+                    "The result of Hibernate Validator is not reliable for method \"save\" in class \"%s\": the superclass \"%s\" declares a private or package-private method with the same signature that this method does not override. Rename one of the two methods.",
+                    ClassExtendingPackagePrivateBase.class.getCanonicalName(),
+                    PackagePrivateBase.class.getCanonicalName()
+            );
+        }
+
+        @Test
+        void givenSamePrivateMethodInSuperclass_shouldFail() {
+            assertThatExceptionOfType(AssertionError.class).isThrownBy(
+                    () -> assertThatValidation().calling(
+                            ClassExtendingPrivateBase.class,
+                            "save",
+                            NestedParameter.class
+                    ).isEnabled()
+            ).withMessage(
+                    "The result of Hibernate Validator is not reliable for method \"save\" in class \"%s\": the superclass \"%s\" declares a private or package-private method with the same signature that this method does not override. Rename one of the two methods.",
+                    ClassExtendingPrivateBase.class.getCanonicalName(),
+                    PrivateBase.class.getCanonicalName()
+            );
         }
 
         @Test
@@ -1589,6 +1609,19 @@ class ValidationAssertTest {
     @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
     @Validated
     public static class ClassImplementingInterfaceWithStaticMethod implements InterfaceWithStaticMethod {
+        public void save(NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    public static class PrivateBase {
+        private void save(@Valid NestedParameter last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ClassExtendingPrivateBase extends PrivateBase {
         public void save(NestedParameter last) {
         }
     }

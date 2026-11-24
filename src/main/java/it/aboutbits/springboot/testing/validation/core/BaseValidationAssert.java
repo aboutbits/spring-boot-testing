@@ -13,6 +13,7 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.validation.annotation.Validated;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -83,6 +84,8 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
                     .isTrue();
 
             var method = getMethodOrFail();
+            assertNoHiddenMethodInSuperclass(method);
+
             var lastParameterIndex = method.getParameterCount() - 1;
             var methodDescriptor = RuleValidator.getBeanDescriptor(
                     classUnderTest,
@@ -100,6 +103,35 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
                             classUnderTest.getCanonicalName()
                     )
                     .isTrue();
+        }
+
+        /// Hibernate Validator keeps a private method of a superclass, or a package-private method of a superclass in another package, as a second method with the same signature. Then its metadata and its validation at runtime do not always agree, and the result depends on which of the two methods it reads first.
+        private void assertNoHiddenMethodInSuperclass(Method method) {
+            for (var type = classUnderTest.getSuperclass(); type != null && !Object.class.equals(type); type = type.getSuperclass()) {
+                for (var candidate : type.getDeclaredMethods()) {
+                    if (candidate.equals(method)
+                            || !candidate.getName().equals(method.getName())
+                            || !Arrays.equals(candidate.getParameterTypes(), method.getParameterTypes())) {
+                        continue;
+                    }
+
+                    var modifiers = candidate.getModifiers();
+                    var isPrivate = Modifier.isPrivate(modifiers);
+                    var isPackagePrivateInOtherPackage = !isPrivate
+                            && !Modifier.isPublic(modifiers)
+                            && !Modifier.isProtected(modifiers)
+                            && !candidate.getDeclaringClass().getPackageName().equals(method.getDeclaringClass().getPackageName());
+
+                    assertThat(isPrivate || isPackagePrivateInOtherPackage)
+                            .withFailMessage(
+                                    "The result of Hibernate Validator is not reliable for method \"%s\" in class \"%s\": the superclass \"%s\" declares a private or package-private method with the same signature that this method does not override. Rename one of the two methods.",
+                                    methodName,
+                                    classUnderTest.getCanonicalName(),
+                                    type.getCanonicalName()
+                            )
+                            .isFalse();
+                }
+            }
         }
 
         private Method getMethodOrFail() {
