@@ -327,6 +327,102 @@ class ValidAnnotationTest {
         }
 
         @Test
+        @DisplayName("When @Valid is on the element of a set parameter, then isEnabled passes")
+        void when_valid_is_on_a_set_element_then_is_enabled_passes() {
+            // given
+            var sut = assertThatValidation();
+
+            // then
+            assertThatCode(
+                    () -> sut.calling(
+                            ValidatedService.class,
+                            "saveWithValidOnSetElement",
+                            Set.class
+                    ).isEnabled() // when
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("When @Valid is on the value of a map parameter, then isEnabled passes")
+        void when_valid_is_on_a_map_value_then_is_enabled_passes() {
+            // given
+            var sut = assertThatValidation();
+
+            // then
+            assertThatCode(
+                    () -> sut.calling(
+                            ValidatedService.class,
+                            "saveWithValidOnMapValue",
+                            Map.class
+                    ).isEnabled() // when
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("When @Valid is on the key of a map parameter, then isEnabled passes")
+        void when_valid_is_on_a_map_key_then_is_enabled_passes() {
+            // given
+            var sut = assertThatValidation();
+
+            // then
+            assertThatCode(
+                    () -> sut.calling(
+                            ValidatedService.class,
+                            "saveWithValidOnMapKey",
+                            Map.class
+                    ).isEnabled() // when
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("When @Valid is on the value of an optional parameter, then isEnabled passes")
+        void when_valid_is_on_an_optional_value_then_is_enabled_passes() {
+            // given
+            var sut = assertThatValidation();
+
+            // then
+            assertThatCode(
+                    () -> sut.calling(
+                            ValidatedService.class,
+                            "saveWithValidOnOptionalValue",
+                            Optional.class
+                    ).isEnabled() // when
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("When @Valid is on a type argument of a nested JDK container, then isEnabled passes")
+        void when_valid_is_in_a_nested_jdk_container_then_is_enabled_passes() {
+            // given
+            var sut = assertThatValidation();
+
+            // then
+            assertThatCode(
+                    () -> sut.calling(
+                            ValidatedService.class,
+                            "saveWithValidInNestedContainer",
+                            Map.class
+                    ).isEnabled() // when
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("When @Valid is on a qualified inner type argument, then isEnabled passes")
+        void when_valid_is_on_a_qualified_inner_type_then_is_enabled_passes() {
+            // given
+            var sut = assertThatValidation();
+
+            // then
+            assertThatCode(
+                    () -> sut.calling(
+                            ValidatedService.class,
+                            "saveWithValidOnQualifiedInnerType",
+                            List.class
+                    ).isEnabled() // when
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
         @DisplayName("When @Valid is on a record container parameter, then isEnabled passes")
         void when_valid_is_on_a_record_container_parameter_then_is_enabled_passes() {
             // given
@@ -620,22 +716,37 @@ class ValidAnnotationTest {
         }
 
         @Test
-        @DisplayName("When the superclass has the same private method, then isEnabled fails")
-        void when_superclass_has_the_same_private_method_then_is_enabled_fails() {
+        @DisplayName("When the superclass has the same private method, then isEnabled passes")
+        void when_superclass_has_the_same_private_method_then_is_enabled_passes() {
+            // given
+            var sut = assertThatValidation();
+
+            // then
+            assertThatCode(
+                    () -> sut.calling(
+                            ServiceExtendingPrivateBase.class,
+                            "save",
+                            Item.class
+                    ).isEnabled() // when
+            ).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("When @Valid is only on the same private method of the superclass, then isEnabled fails")
+        void when_valid_is_only_on_the_same_private_method_of_the_superclass_then_is_enabled_fails() {
             // given
             var sut = assertThatValidation();
 
             // then
             assertThatExceptionOfType(AssertionError.class).isThrownBy(
                     () -> sut.calling(
-                            ServiceExtendingPrivateBase.class,
+                            ServiceExtendingPrivateBaseWithValid.class,
                             "save",
                             Item.class
                     ).isEnabled() // when
             ).withMessage(
-                    "Hibernate Validator has no reliable result for this method, because a superclass declares a private or package-private method with the same signature. Rename one of the two methods [class=%s, method=save, superclass=%s]",
-                    ServiceExtendingPrivateBase.class.getCanonicalName(),
-                    PrivateBase.class.getCanonicalName()
+                    "Missing @Valid annotation [class=%s, method=save, parameter=last]",
+                    ServiceExtendingPrivateBaseWithValid.class.getCanonicalName()
             );
         }
 
@@ -653,7 +764,7 @@ class ValidAnnotationTest {
                             PackagePrivateBase.Item.class
                     ).isEnabled() // when
             ).withMessage(
-                    "Hibernate Validator has no reliable result for this method, because a superclass declares a private or package-private method with the same signature. Rename one of the two methods [class=%s, method=save, superclass=%s]",
+                    "Hibernate Validator has no reliable result for this method, because a superclass in another package declares a package-private method with the same signature. Rename one of the two methods [class=%s, method=save, superclass=%s]",
                     ServiceExtendingPackagePrivateBase.class.getCanonicalName(),
                     PackagePrivateBase.class.getCanonicalName()
             );
@@ -879,6 +990,24 @@ class ValidAnnotationTest {
 
         public void saveWithMetaValid(@ValidCascade Item last) {
         }
+
+        public void saveWithValidOnSetElement(Set<@Valid Item> last) {
+        }
+
+        public void saveWithValidOnMapValue(Map<String, @Valid Item> last) {
+        }
+
+        public void saveWithValidOnMapKey(Map<@Valid Item, String> last) {
+        }
+
+        public void saveWithValidOnOptionalValue(Optional<@Valid Item> last) {
+        }
+
+        public void saveWithValidInNestedContainer(Map<String, List<@Valid Item>> last) {
+        }
+
+        public void saveWithValidOnQualifiedInnerType(List<Outer.@Valid Inner> last) {
+        }
     }
 
     public static class ServiceExtendingValidatedService extends ValidatedService {
@@ -1009,13 +1138,26 @@ class ValidAnnotationTest {
 
     @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
     public static class PrivateBase {
-        private void save(@Valid Item last) {
+        private void save(Item last) {
         }
     }
 
     @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
     @Validated
     public static class ServiceExtendingPrivateBase extends PrivateBase {
+        public void save(@Valid Item last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    public static class PrivateBaseWithValid {
+        private void save(@Valid Item last) {
+        }
+    }
+
+    @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+    @Validated
+    public static class ServiceExtendingPrivateBaseWithValid extends PrivateBaseWithValid {
         public void save(Item last) {
         }
     }

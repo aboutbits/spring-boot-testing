@@ -283,7 +283,6 @@ final class RuleValidator<P> {
 
                 if (isBeanType) {
                     var propertyDescriptor = getPropertyDescriptor(field.getName(), parameterUnderTest, beanDescriptor);
-                    // not `isCascaded(propertyDescriptor)`: for a record that is also a container, a cascade into its elements does not validate its own properties
                     assertThat(propertyDescriptor != null && propertyDescriptor.isCascaded())
                             .withFailMessage(
                                     "Missing @Valid annotation for property: %s. Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.",
