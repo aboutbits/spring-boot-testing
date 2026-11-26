@@ -4,10 +4,10 @@ import it.aboutbits.archunit.toolbox.support.ArchIgnoreNoProductionCounterpart;
 import jakarta.validation.Valid;
 import org.jspecify.annotations.NullMarked;
 
-/// A superclass in another package than the test. A method with the same signature in a subclass in another package does not override its package-private method.
+/// In another package than the test on purpose: a subclass in the test's package does not override the package-private method.
 @ArchIgnoreNoProductionCounterpart
-@NullMarked
 @SuppressWarnings({"java:S1186", "unused"}) // Suppress the "empty method body" warning
+@NullMarked
 public class PackagePrivateBase {
     void save(@Valid Item last) {
     }

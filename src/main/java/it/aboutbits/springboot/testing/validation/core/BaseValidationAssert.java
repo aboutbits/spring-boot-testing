@@ -75,12 +75,10 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         private final String methodName;
         private final Class<?>[] methodParameterTypes;
 
-        /// Checks that Spring validates calls of the method through its `MethodValidationPostProcessor` and that Hibernate Validator cascades into the last parameter.
-        ///
-        /// `@Validated` counts on the class, on a superclass, on an interface or as a meta-annotation, because the pointcut of the `MethodValidationPostProcessor` finds it there. For the last parameter, the check reads the metadata of Hibernate Validator, so it follows the rules of Hibernate Validator for the type hierarchy: `@Valid` on the parameter of a method that this method overrides counts, and a configuration that Hibernate Validator rejects fails.
+        /// Fails unless calls of the method are validated: the class needs [Validated], and the last parameter needs `@Valid`, on the parameter itself or on a type argument of a JDK container such as `List<@Valid Item>`.
         public void isEnabled() {
             assertThat(AnnotatedElementUtils.hasAnnotation(classUnderTest, Validated.class))
-                    .withFailMessage("Missing @Validated annotation on class \"%s\"", classUnderTest.getCanonicalName())
+                    .withFailMessage("Missing @Validated annotation [class=%s]", classUnderTest.getCanonicalName())
                     .isTrue();
 
             var method = getMethodOrFail();
@@ -89,7 +87,7 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
             var lastParameterIndex = method.getParameterCount() - 1;
             var methodDescriptor = RuleValidator.getBeanDescriptor(
                     classUnderTest,
-                    "method \"%s\" in class \"%s\"".formatted(methodName, classUnderTest.getCanonicalName())
+                    "class=%s, method=%s".formatted(classUnderTest.getCanonicalName(), methodName)
             ).getConstraintsForMethod(methodName, methodParameterTypes);
             var parameterDescriptor = methodDescriptor != null
                     ? methodDescriptor.getParameterDescriptors().get(lastParameterIndex)
@@ -97,20 +95,20 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
 
             assertThat(RuleValidator.isCascaded(parameterDescriptor))
                     .withFailMessage(
-                            "Missing @Valid annotation for parameter \"%s\" of method \"%s\" in class \"%s\"",
-                            method.getParameters()[lastParameterIndex].getName(),
+                            "Missing @Valid annotation [class=%s, method=%s, parameter=%s]",
+                            classUnderTest.getCanonicalName(),
                             methodName,
-                            classUnderTest.getCanonicalName()
+                            method.getParameters()[lastParameterIndex].getName()
                     )
                     .isTrue();
         }
 
-        /// Hibernate Validator keeps a private method of a superclass, or a package-private method of a superclass in another package, as a second method with the same signature. Then its metadata and its validation at runtime do not always agree, and the result depends on which of the two methods it reads first.
+        /// Not redundant to the metadata check in [#isEnabled]: when a superclass declares a private or not-visible method with the same signature, the result of Hibernate Validator depends on which of the two methods it reads first.
         private void assertNoHiddenMethodInSuperclass(Method method) {
             for (var type = classUnderTest.getSuperclass(); type != null && !Object.class.equals(type); type = type.getSuperclass()) {
                 for (var candidate : type.getDeclaredMethods()) {
-                    // Hibernate Validator does not read static or synthetic methods, so they cannot make its result unreliable.
                     if (candidate.equals(method)
+                            // Hibernate Validator ignores static and synthetic methods, so they never collide with the checked method
                             || Modifier.isStatic(candidate.getModifiers())
                             || candidate.isSynthetic()
                             || !candidate.getName().equals(method.getName())
@@ -127,9 +125,9 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
 
                     assertThat(isPrivate || isPackagePrivateInOtherPackage)
                             .withFailMessage(
-                                    "The result of Hibernate Validator is not reliable for method \"%s\" in class \"%s\": the superclass \"%s\" declares a private or package-private method with the same signature that this method does not override. Rename one of the two methods.",
-                                    methodName,
+                                    "Hibernate Validator has no reliable result for this method, because a superclass declares a private or package-private method with the same signature. Rename one of the two methods [class=%s, method=%s, superclass=%s]",
                                     classUnderTest.getCanonicalName(),
+                                    methodName,
                                     type.getCanonicalName()
                             )
                             .isFalse();

@@ -70,10 +70,10 @@ final class RuleValidator<P> {
         var functions = assertionParameter.functions();
         var nonBeanTypes = assertionParameter.nonBeanTypes();
 
-        // Read the metadata first: when Hibernate Validator rejects the class, every later step fails with a less clear exception.
+        // first: a configuration that Hibernate Validator rejects then fails here with the class name, and not later in `assertThatSuppliedParameterIsValid` with a raw exception
         var beanDescriptor = getBeanDescriptor(
                 parameterUnderTest.getClass(),
-                "class \"%s\"".formatted(parameterUnderTest.getClass().getCanonicalName())
+                "class=%s".formatted(parameterUnderTest.getClass().getCanonicalName())
         );
 
         var rulesAndFunctions = rules.size() + functions.size();
@@ -272,7 +272,7 @@ final class RuleValidator<P> {
         var clazz = parameterUnderTest.getClass();
 
         for (var field : clazz.getDeclaredFields()) {
-            // Hibernate Validator does not validate static fields.
+            // Hibernate Validator does not validate static fields, so a static record constant needs no `@Valid`
             if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
@@ -282,9 +282,13 @@ final class RuleValidator<P> {
                 var isBeanType = nonBeanTypes.stream().noneMatch(type -> type.isAssignableFrom(field.getType()));
 
                 if (isBeanType) {
-                    // The nested record itself must be cascaded. A cascade into its elements only (for a record that is also a container) does not validate its own properties.
                     var propertyDescriptor = getPropertyDescriptor(field.getName(), parameterUnderTest, beanDescriptor);
-                    assertThat(propertyDescriptor != null && propertyDescriptor.isCascaded()).withFailMessage("Missing @Valid annotation for property: " + field.getName() + ". Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.")
+                    // not `isCascaded(propertyDescriptor)`: for a record that is also a container, a cascade into its elements does not validate its own properties
+                    assertThat(propertyDescriptor != null && propertyDescriptor.isCascaded())
+                            .withFailMessage(
+                                    "Missing @Valid annotation for property: %s. Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.",
+                                    field.getName()
+                            )
                             .isTrue();
                 }
             }
@@ -409,31 +413,23 @@ final class RuleValidator<P> {
             Object object,
             BeanDescriptor beanDescriptor
     ) {
-        // Called only for its exception: a property that does not exist fails with "Property does not exist" and not with "Missing @Valid annotation".
+        // only for its exception: an unknown property fails with "Property does not exist" and not with "Missing @Valid annotation"
         getFieldOrFail(propertyName, object);
 
         return beanDescriptor.getConstraintsForProperty(propertyName);
     }
 
-    /// Returns the metadata that Hibernate Validator reads for the class: the constraints and the cascades of its properties and methods, from the whole type hierarchy.
-    ///
-    /// Hibernate Validator rejects some configurations, for example `@Valid` on the parameter of a method that overrides a method without it (HV000151), or a type argument without a value extractor (HV000197). Then every validation of the class fails, so this method fails with an `AssertionError` that names the checked element.
-    static BeanDescriptor getBeanDescriptor(Class<?> clazz, String checkedElement) {
+    static BeanDescriptor getBeanDescriptor(Class<?> clazz, String location) {
         try {
             return VALIDATOR_FACTORY.getValidator().getConstraintsForClass(clazz);
         } catch (ConstraintDeclarationException e) {
             throw new AssertionError(
-                    "Hibernate Validator rejects the configuration of %s: %s".formatted(checkedElement, e.getMessage()),
+                    "Hibernate Validator rejects the configuration [%s, reason=%s]".formatted(location, e.getMessage()),
                     e
             );
         }
     }
 
-    /// Returns `true` when Hibernate Validator cascades into the property or parameter itself (`@Valid Item item`), or into a type argument of a JDK container at any depth (`List<@Valid Item>`, `Map<String, List<@Valid Item>>`, `List<Outer.@Valid Inner>`). Hibernate Validator 9.1 deprecates `@Valid` on a container (HV000271) and wants it on the type argument.
-    ///
-    /// A JDK container is a type from a `java.` package that is an `Iterable`, a `Map` or an `Optional` (`List`, `Set`, `Collection`, `Map`, `Optional` and others). Hibernate Validator has its built-in value extractors for these types. For your own types (for example a record that implements `Iterable`), a `@Valid` on the type argument cascades only into the elements and not into the properties of the type itself, so only `@Valid` on the property or parameter counts.
-    ///
-    /// The check reads the metadata of Hibernate Validator, so a `@Valid` where Hibernate Validator does not cascade does not count, for example on the type of the element itself (`Outer.@Valid Inner item`), on a wildcard bound (`List<? extends @Valid Item>`) or on an array component (`Outer.@Valid Inner[]`).
     static <D extends CascadableDescriptor & ContainerDescriptor> boolean isCascaded(@Nullable D descriptor) {
         return descriptor != null
                 && (descriptor.isCascaded() || hasCascadedJdkContainerElement(descriptor.getConstrainedContainerElementTypes()));
@@ -441,6 +437,7 @@ final class RuleValidator<P> {
 
     private static boolean hasCascadedJdkContainerElement(Set<ContainerElementTypeDescriptor> containerElements) {
         for (var containerElement : containerElements) {
+            // only JDK containers: for an own container type, Hibernate Validator validates the elements but not the properties of the type itself
             if (isJdkContainer(containerElement.getContainerClass())
                     && (containerElement.isCascaded()
                     || hasCascadedJdkContainerElement(containerElement.getConstrainedContainerElementTypes()))) {
