@@ -1,11 +1,16 @@
 package it.aboutbits.springboot.testing.validation.core;
 
+import jakarta.validation.ConstraintDeclarationException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import jakarta.validation.metadata.BeanDescriptor;
+import jakarta.validation.metadata.CascadableDescriptor;
+import jakarta.validation.metadata.ContainerDescriptor;
+import jakarta.validation.metadata.ContainerElementTypeDescriptor;
+import jakarta.validation.metadata.PropertyDescriptor;
 import lombok.SneakyThrows;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -17,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -63,6 +70,12 @@ final class RuleValidator<P> {
         var functions = assertionParameter.functions();
         var nonBeanTypes = assertionParameter.nonBeanTypes();
 
+        // first: a configuration that Hibernate Validator rejects then fails here with the class name, and not later in `assertThatSuppliedParameterIsValid` with a raw exception
+        var beanDescriptor = getBeanDescriptor(
+                parameterUnderTest.getClass(),
+                "class=%s".formatted(parameterUnderTest.getClass().getCanonicalName())
+        );
+
         var rulesAndFunctions = rules.size() + functions.size();
 
         assertThat(rulesAndFunctions)
@@ -94,13 +107,13 @@ final class RuleValidator<P> {
                 validator
         );
 
-        assertThatValidAnnotationsArePresent(rules, propertiesWithRules, parameterUnderTest);
+        assertThatValidAnnotationsArePresent(rules, propertiesWithRules, parameterUnderTest, beanDescriptor);
 
         assertThatNullableAnnotationsArePresent(rules, propertiesWithRules, parameterUnderTest);
 
         assertThatAllPropertiesHaveRules(parameterUnderTest, propertiesWithRules);
 
-        checkIfNestedValidationIsEnabledForNestedRecords(parameterUnderTest, nonBeanTypes);
+        checkIfNestedValidationIsEnabledForNestedRecords(parameterUnderTest, nonBeanTypes, beanDescriptor);
     }
 
     private static HashSet<String> getPropertyNamesThatHaveRules(List<Rule> rules) {
@@ -197,7 +210,8 @@ final class RuleValidator<P> {
     private static <P> void assertThatValidAnnotationsArePresent(
             List<Rule> rules,
             HashSet<String> propertiesWithRules,
-            P parameterUnderTest
+            P parameterUnderTest,
+            BeanDescriptor beanDescriptor
     ) {
         var propertiesWithValid = rules.stream()
                 .filter(Rule::isRequireValid)
@@ -207,7 +221,7 @@ final class RuleValidator<P> {
         for (var property : propertiesWithValid) {
             propertiesWithRules.add(property);
 
-            assertThat(hasValidAnnotation(property, parameterUnderTest))
+            assertThat(isCascaded(getPropertyDescriptor(property, parameterUnderTest, beanDescriptor)))
                     .withFailMessage("Missing @Valid annotation for property: " + property)
                     .isTrue();
         }
@@ -252,19 +266,29 @@ final class RuleValidator<P> {
 
     private static <P> void checkIfNestedValidationIsEnabledForNestedRecords(
             P parameterUnderTest,
-            Set<Class<?>> nonBeanTypes
+            Set<Class<?>> nonBeanTypes,
+            BeanDescriptor beanDescriptor
     ) {
         var clazz = parameterUnderTest.getClass();
 
         for (var field : clazz.getDeclaredFields()) {
+            // Hibernate Validator does not validate static fields, so a static record constant needs no `@Valid`
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
             var isRecord = Record.class.isAssignableFrom(field.getType());
             if (isRecord) {
                 var isBeanType = nonBeanTypes.stream().noneMatch(type -> type.isAssignableFrom(field.getType()));
 
                 if (isBeanType) {
-                    var maybeAnnotation = field.getAnnotation(Valid.class);
-                    assertThat(maybeAnnotation).withFailMessage("Missing @Valid annotation for property: " + field.getName() + ". Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.")
-                            .isNotNull();
+                    var propertyDescriptor = getPropertyDescriptor(field.getName(), parameterUnderTest, beanDescriptor);
+                    assertThat(propertyDescriptor != null && propertyDescriptor.isCascaded())
+                            .withFailMessage(
+                                    "Missing @Valid annotation for property: %s. Note: This is implicitly assumed for nested records. You can configure `BaseValidationAssert.registerNonBeanType` to add exceptions.",
+                                    field.getName()
+                            )
+                            .isTrue();
                 }
             }
         }
@@ -383,10 +407,51 @@ final class RuleValidator<P> {
         return field.getType();
     }
 
-    private static <T> boolean hasValidAnnotation(String propertyName, T object) {
-        var field = getFieldOrFail(propertyName, object);
+    private static @Nullable PropertyDescriptor getPropertyDescriptor(
+            String propertyName,
+            Object object,
+            BeanDescriptor beanDescriptor
+    ) {
+        // only for its exception: an unknown property fails with "Property does not exist" and not with "Missing @Valid annotation"
+        getFieldOrFail(propertyName, object);
 
-        return field.getAnnotation(Valid.class) != null;
+        return beanDescriptor.getConstraintsForProperty(propertyName);
+    }
+
+    static BeanDescriptor getBeanDescriptor(Class<?> clazz, String location) {
+        try {
+            return VALIDATOR_FACTORY.getValidator().getConstraintsForClass(clazz);
+        } catch (ConstraintDeclarationException e) {
+            throw new AssertionError(
+                    "Hibernate Validator rejects the configuration [%s, reason=%s]".formatted(location, e.getMessage()),
+                    e
+            );
+        }
+    }
+
+    static <D extends CascadableDescriptor & ContainerDescriptor> boolean isCascaded(@Nullable D descriptor) {
+        return descriptor != null
+                && (descriptor.isCascaded() || hasCascadedJdkContainerElement(descriptor.getConstrainedContainerElementTypes()));
+    }
+
+    private static boolean hasCascadedJdkContainerElement(Set<ContainerElementTypeDescriptor> containerElements) {
+        for (var containerElement : containerElements) {
+            // only JDK containers: for an own container type, Hibernate Validator validates the elements but not the properties of the type itself
+            if (isJdkContainer(containerElement.getContainerClass())
+                    && (containerElement.isCascaded()
+                    || hasCascadedJdkContainerElement(containerElement.getConstrainedContainerElementTypes()))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isJdkContainer(Class<?> containerClass) {
+        return containerClass.getPackageName().startsWith("java.")
+                && (Iterable.class.isAssignableFrom(containerClass)
+                || Map.class.isAssignableFrom(containerClass)
+                || Optional.class.equals(containerClass));
     }
 
     private static boolean hasNullableAnnotation(String propertyName, Object object) {

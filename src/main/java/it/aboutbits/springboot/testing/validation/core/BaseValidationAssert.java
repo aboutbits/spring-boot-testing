@@ -2,7 +2,6 @@ package it.aboutbits.springboot.testing.validation.core;
 
 import com.google.errorprone.annotations.CheckReturnValue;
 import it.aboutbits.springboot.toolbox.type.CustomType;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +9,11 @@ import lombok.Setter;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.validation.annotation.Validated;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -73,13 +75,68 @@ public abstract class BaseValidationAssert<R extends BaseRuleBuilder<?>> {
         private final String methodName;
         private final Class<?>[] methodParameterTypes;
 
+        /// Fails unless the class has [Validated] and the last parameter has `@Valid`, on the parameter itself or on a type argument of a JDK container such as `List<@Valid Item>`.
         public void isEnabled() {
-            assertThat(classUnderTest.isAnnotationPresent(Validated.class)).isTrue();
+            assertThat(AnnotatedElementUtils.hasAnnotation(classUnderTest, Validated.class))
+                    .withFailMessage("Missing @Validated annotation [class=%s]", classUnderTest.getCanonicalName())
+                    .isTrue();
 
+            var method = getMethodOrFail();
+            assertNoHiddenMethodInSuperclass(method);
+
+            var lastParameterIndex = method.getParameterCount() - 1;
+            var methodDescriptor = RuleValidator.getBeanDescriptor(
+                    classUnderTest,
+                    "class=%s, method=%s".formatted(classUnderTest.getCanonicalName(), methodName)
+            ).getConstraintsForMethod(methodName, methodParameterTypes);
+            var parameterDescriptor = methodDescriptor != null
+                    ? methodDescriptor.getParameterDescriptors().get(lastParameterIndex)
+                    : null;
+
+            assertThat(RuleValidator.isCascaded(parameterDescriptor))
+                    .withFailMessage(
+                            "Missing @Valid annotation [class=%s, method=%s, parameter=%s]",
+                            classUnderTest.getCanonicalName(),
+                            methodName,
+                            method.getParameters()[lastParameterIndex].getName()
+                    )
+                    .isTrue();
+        }
+
+        /// Not redundant to the metadata check in [#isEnabled]: when a superclass in another package declares a package-private method with the same signature, the result of Hibernate Validator depends on which of the two methods it reads first.
+        private void assertNoHiddenMethodInSuperclass(Method method) {
+            for (var type = classUnderTest.getSuperclass(); type != null && !Object.class.equals(type); type = type.getSuperclass()) {
+                for (var candidate : type.getDeclaredMethods()) {
+                    if (candidate.equals(method)
+                            // Hibernate Validator ignores static and synthetic methods, so they never collide with the checked method
+                            || Modifier.isStatic(candidate.getModifiers())
+                            || candidate.isSynthetic()
+                            || !candidate.getName().equals(method.getName())
+                            || !Arrays.equals(candidate.getParameterTypes(), method.getParameterTypes())) {
+                        continue;
+                    }
+
+                    var modifiers = candidate.getModifiers();
+                    var isPackagePrivateInOtherPackage = !Modifier.isPrivate(modifiers)
+                            && !Modifier.isPublic(modifiers)
+                            && !Modifier.isProtected(modifiers)
+                            && !candidate.getDeclaringClass().getPackageName().equals(method.getDeclaringClass().getPackageName());
+
+                    assertThat(isPackagePrivateInOtherPackage)
+                            .withFailMessage(
+                                    "Hibernate Validator has no reliable result for this method, because a superclass in another package declares a package-private method with the same signature. Rename one of the two methods [class=%s, method=%s, superclass=%s]",
+                                    classUnderTest.getCanonicalName(),
+                                    methodName,
+                                    type.getCanonicalName()
+                            )
+                            .isFalse();
+                }
+            }
+        }
+
+        private Method getMethodOrFail() {
             try {
-                var method = classUnderTest.getMethod(methodName, methodParameterTypes);
-                var parameter = method.getParameters()[method.getParameterCount() - 1];
-                assertThat(parameter.isAnnotationPresent(Valid.class)).isTrue();
+                return classUnderTest.getMethod(methodName, methodParameterTypes);
             } catch (NoSuchMethodException e) {
                 throw new AssertionError(
                         "Method \"%s(%s)\" not found in class \"%s\"".formatted(
